@@ -1,0 +1,9 @@
+.Spreadsheet-Column-Header {
+}
+
+.Spreadsheet-Column-Header div {
+  display: inline-block;
+  width: 30px;
+  border: 1px solid gray;
+  text-align: center;
+}
