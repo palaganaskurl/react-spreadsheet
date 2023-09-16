@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Item, Separator, Submenu, ItemParams } from 'react-contexify';
+import { Menu, Item, Separator, ItemParams } from 'react-contexify';
 import 'react-contexify/dist/ReactContexify.css';
 import { useSpreadsheet } from '../state/useSpreadsheet';
 import { RowContextMenuProps } from '../types';
@@ -26,18 +26,28 @@ const RowContextMenu = () => {
       insertNewRowAt(props?.rowIndex, 'after');
     }
   };
+  const toBeImplemented = () => {
+    alert('To be implemented!');
+  };
 
   return (
     <Menu id={MENU_ID}>
+      <Item onClick={toBeImplemented}>Copy</Item>
+      <Separator />
       <Item onClick={insertNewRowAbove}>Insert 1 row above</Item>
       <Item onClick={insertNewRowBelow}>Insert 1 row below</Item>
-      <Separator />
-      <Item disabled>Disabled</Item>
-      <Separator />
-      <Submenu label="Submenu">
-        <Item onClick={insertNewRowBelow}>Sub Item 1</Item>
-        <Item onClick={() => {}}>Sub Item 2</Item>
-      </Submenu>
+      <Item onClick={toBeImplemented} disabled>
+        Delete row
+      </Item>
+      <Item onClick={toBeImplemented} disabled>
+        Clear row
+      </Item>
+      <Item onClick={toBeImplemented} disabled>
+        Hide row
+      </Item>
+      <Item onClick={toBeImplemented} disabled>
+        Resize row
+      </Item>
     </Menu>
   );
 };
