@@ -34,7 +34,7 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
     index,
     label: header,
   })),
-  activeCell: [-1, -1],
+  activeCell: [0, 0],
   setInitialData: (initialData: Array<CellData[]>) => {
     set({
       data: initialData,
