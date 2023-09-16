@@ -5,36 +5,22 @@ import { useSpreadsheet } from '../state/useSpreadsheet';
 
 const Cell = ({ width, height, row, column }: CellProps) => {
   const setCellValue = useSpreadsheet((state) => state.setCellValue);
-  // const getCellValue = useSpreadsheet((state) => state.getCellValue);
   const [activeCellRow, activeCellColumn] = useSpreadsheet(
     (state) => state.activeCell
   );
   const setActiveCell = useSpreadsheet((state) => state.setActiveCell);
-  const [editing, setEditing] = React.useState<boolean>(false);
+  const [isEditing, setEditing] = React.useState<boolean>(false);
   const isContentEditable =
-    activeCellRow === row && activeCellColumn === column && editing;
+    activeCellRow === row && activeCellColumn === column;
 
   const cellRef = React.useRef<HTMLDivElement>(null);
 
-  // const [cellContent, setCellContent] = React.useState('');
-
-  // React.useEffect(() => {
-  //   if (cellRef.current) {
-  //     // moveCursorToEnd(inputRef.current);
-  //     console.log('cell ref', cellRef);
-  //   }
-  // }, [cellRef]);
+  // TODO: On not double click, should overwrite all content
 
   return (
     <div
       onBlur={() => {
         setEditing(false);
-        console.log(
-          'cellRef.current?.textContent',
-          cellRef.current?.textContent,
-          cellRef.current?.textContent?.trim() === '',
-          typeof cellRef.current?.textContent
-        );
       }}
       ref={cellRef}
       contentEditable={isContentEditable}
@@ -46,7 +32,6 @@ const Cell = ({ width, height, row, column }: CellProps) => {
         switch (event.detail) {
           case 1: {
             setActiveCell(row, column);
-            setEditing(true);
 
             break;
           }
@@ -71,8 +56,7 @@ const Cell = ({ width, height, row, column }: CellProps) => {
         'Spreadsheet-Cell': true,
         'Spreadsheet-Active-Cell':
           activeCellRow === row && activeCellColumn === column,
-        'Spreadsheet-Active-Cell-No-Content':
-          cellRef.current?.textContent?.trim() === '',
+        'Spreadsheet-Active-Cell-No-Content': !isEditing,
       })}
       style={{
         minWidth: `${width}px`,
