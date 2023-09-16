@@ -107,7 +107,7 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
     columns.splice(columnIndex, 0, {
       height: DEFAULT_ROW_HEIGHT,
       width: DEFAULT_COLUMN_WIDTH,
-      label: 'asd',
+      id: uuidv4(),
     });
 
     for (let i = 0; i < data.length; i++) {
