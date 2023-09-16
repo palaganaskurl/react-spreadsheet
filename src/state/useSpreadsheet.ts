@@ -1,34 +1,34 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
-import { CellData, HeaderData } from '../types';
-import { numberToExcelHeaderArray } from '../lib/spreadsheet';
+import { CellData, ColumnData } from '../types';
 
 export type SpreadsheetState = {
   activeCell: [number, number];
+  columns: ColumnData[];
   data: Array<CellData[]>;
   getCellValue: (row: number, column: number) => CellData['value'];
-  headers: HeaderData[];
+  insertNewColumnAt: (column: number, where: 'before' | 'after') => void;
   insertNewRowAt: (row: number, where: 'before' | 'after') => void;
   setActiveCell: (row: number, column: number) => void;
   setCellValue: (row: number, column: number, value: CellData['value']) => void;
   setColumnWidth: (column: number, width: number) => void;
+  setColumns: (columns: ColumnData[]) => void;
   setData: (data: Array<CellData[]>) => void;
-  setHeaders: (headers: HeaderData[]) => void;
 };
 
 const DEFAULT_COLUMN_WIDTH = 50;
 const DEFAULT_ROW_HEIGHT = 30;
 const COLUMN_COUNT = 10;
-const defaultColumnHeaders = numberToExcelHeaderArray(COLUMN_COUNT);
 
 const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
   data: [],
-  headers: defaultColumnHeaders.map((header, index) => ({
-    height: DEFAULT_ROW_HEIGHT,
-    width: DEFAULT_COLUMN_WIDTH,
-    index,
-    label: header,
-  })),
+  columns: Array(COLUMN_COUNT)
+    .fill({})
+    .map(() => ({
+      height: DEFAULT_ROW_HEIGHT,
+      width: DEFAULT_COLUMN_WIDTH,
+      id: uuidv4(),
+    })),
   activeCell: [0, 0],
   setData: (data: Array<CellData[]>) => {
     set({ data });
@@ -76,29 +76,47 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
       activeCell: [row, column],
     });
   },
-  setHeaders: (headers: HeaderData[]) => {
+  setColumns: (columns: ColumnData[]) => {
     set({
-      headers,
+      columns,
     });
   },
   insertNewRowAt: (row: number, where: 'before' | 'after') => {
-    const { data, headers } = get();
+    const { data, columns } = get();
     const rowIndex = where === 'before' ? row : row + 1;
     const newUUIDs = [];
 
-    console.log('data before', data);
-
-    for (let i = 0; i < headers.length; i++) {
+    for (let i = 0; i < columns.length; i++) {
       newUUIDs.push({
-        height: 30,
-        width: 50,
+        height: columns[i].height,
+        width: columns[i].width,
         id: uuidv4(),
       });
     }
 
     data.splice(rowIndex, 0, newUUIDs);
 
-    console.log('data after', data);
+    set({
+      data: [...data],
+    });
+  },
+  insertNewColumnAt: (column: number, where: 'before' | 'after') => {
+    const { data, columns } = get();
+    const columnIndex = where === 'before' ? column : column + 1;
+
+    columns.splice(columnIndex, 0, {
+      height: DEFAULT_ROW_HEIGHT,
+      width: DEFAULT_COLUMN_WIDTH,
+      label: 'asd',
+    });
+
+    for (let i = 0; i < data.length; i++) {
+      data[i].splice(columnIndex, 0, {
+        height: DEFAULT_ROW_HEIGHT,
+        width: DEFAULT_COLUMN_WIDTH,
+        id: uuidv4(),
+      });
+    }
 
     set({
       data: [...data],

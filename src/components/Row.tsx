@@ -1,11 +1,11 @@
 import React from 'react';
 import { useContextMenu } from 'react-contexify';
 import { RowProps } from '../types';
+import { RowContextMenuID } from '../constants';
 
 const Row = ({ children, index }: RowProps) => {
-  const MENU_ID = 'RowContextMenu';
   const { show } = useContextMenu({
-    id: MENU_ID,
+    id: RowContextMenuID,
   });
 
   return (

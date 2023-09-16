@@ -3,10 +3,9 @@ import { Menu, Item, Separator, ItemParams } from 'react-contexify';
 import 'react-contexify/dist/ReactContexify.css';
 import { useSpreadsheet } from '../state/useSpreadsheet';
 import { RowContextMenuProps } from '../types';
+import { RowContextMenuID } from '../constants';
 
 const RowContextMenu = () => {
-  const MENU_ID = 'RowContextMenu';
-
   const insertNewRowAt = useSpreadsheet((state) => state.insertNewRowAt);
   const insertNewRowAbove = ({
     props,
@@ -31,7 +30,7 @@ const RowContextMenu = () => {
   };
 
   return (
-    <Menu id={MENU_ID}>
+    <Menu id={RowContextMenuID}>
       <Item onClick={toBeImplemented}>Copy</Item>
       <Separator />
       <Item onClick={insertNewRowAbove}>Insert 1 row above</Item>
