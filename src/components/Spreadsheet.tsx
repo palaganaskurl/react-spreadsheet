@@ -1,8 +1,7 @@
 import React from 'react';
 import './Spreadsheet.css';
 import { ResizableBox } from 'react-resizable';
-import { numberToExcelHeaderArray } from '../lib/spreadsheet';
-import { HeaderData, CellData } from '../types';
+import { CellData } from '../types';
 import 'react-resizable/css/styles.css';
 import Cell from './Cell';
 import { useSpreadsheet } from '../state/useSpreadsheet';
@@ -13,17 +12,6 @@ export function Spreadsheet() {
 
   const ROW_COUNT = 10;
   const COLUMN_COUNT = 10;
-
-  const columnHeaders = numberToExcelHeaderArray(COLUMN_COUNT);
-
-  const initialHeadersData: HeaderData[] = columnHeaders.map(
-    (header, index) => ({
-      height: DEFAULT_ROW_HEIGHT,
-      width: DEFAULT_COLUMN_WIDTH,
-      index,
-      label: header,
-    })
-  );
 
   const initialRowData: Array<CellData[]> = [];
 
@@ -44,17 +32,24 @@ export function Spreadsheet() {
   const setInitialData = useSpreadsheet((state) => state.setInitialData);
   const setColumnWidth = useSpreadsheet((state) => state.setColumnWidth);
 
+  const headers = useSpreadsheet((state) => state.headers);
+  const setHeaders = useSpreadsheet((state) => state.setHeaders);
+
+  const [activeCellRow, activeCellColumn] = useSpreadsheet(
+    (state) => state.activeCell
+  );
+
   React.useEffect(() => {
     setInitialData(initialRowData);
   }, []);
 
-  const [headersData, setHeadersData] =
-    React.useState<HeaderData[]>(initialHeadersData);
-
   return (
     <div className="Spreadsheet">
       <div className="Spreadsheet-Formula-Bar">
-        <div className="Spreadsheet-Formula-Bar-Active-Cell">B3</div>
+        <div className="Spreadsheet-Formula-Bar-Active-Cell">
+          {headers[activeCellColumn].label}
+          {activeCellRow + 1}
+        </div>
         <div className="Spreadsheet-Formula">
           fx
           <input type="text" />
@@ -62,7 +57,7 @@ export function Spreadsheet() {
       </div>
       <div className="Spreadsheet-Column-Headers">
         <div className="Spreadsheet-Row-Number Spreadsheet-Row-Number-First" />
-        {headersData.map((header) => (
+        {headers.map((header) => (
           <div
             className="Spreadsheet-Column-Header"
             key={`columnHeader${header.label}`}
@@ -84,7 +79,7 @@ export function Spreadsheet() {
               // eslint-disable-next-line
               onResize={(event, { node, size, handle }) => {
                 // Resize Headers
-                const headersCopy = headersData.map((inHeader) => {
+                const headersCopy = headers.map((inHeader) => {
                   if (inHeader.label === header.label) {
                     return {
                       ...inHeader,
@@ -98,7 +93,7 @@ export function Spreadsheet() {
                   return inHeader;
                 });
 
-                setHeadersData(headersCopy);
+                setHeaders(headersCopy);
                 setColumnWidth(header.index, size.width);
               }}
             >
