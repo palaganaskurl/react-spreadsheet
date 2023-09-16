@@ -1,10 +1,13 @@
 import React from 'react';
 import './Spreadsheet.css';
 import { ResizableBox } from 'react-resizable';
+import { v4 as uuidv4 } from 'uuid';
 import { CellData } from '../types';
 import 'react-resizable/css/styles.css';
 import Cell from './Cell';
 import { useSpreadsheet } from '../state/useSpreadsheet';
+import Row from './Row';
+import RowContextMenu from './RowContextMenu';
 
 export function Spreadsheet() {
   const DEFAULT_COLUMN_WIDTH = 50;
@@ -20,16 +23,15 @@ export function Spreadsheet() {
 
     for (let j = 0; j < COLUMN_COUNT; j++) {
       initialRowData[i].push({
-        row: i,
-        column: j,
         width: DEFAULT_COLUMN_WIDTH,
         height: DEFAULT_ROW_HEIGHT,
+        id: uuidv4(),
       });
     }
   }
 
   const rowData = useSpreadsheet((state) => state.data);
-  const setInitialData = useSpreadsheet((state) => state.setInitialData);
+  const setData = useSpreadsheet((state) => state.setData);
   const setColumnWidth = useSpreadsheet((state) => state.setColumnWidth);
 
   const headers = useSpreadsheet((state) => state.headers);
@@ -39,8 +41,10 @@ export function Spreadsheet() {
     (state) => state.activeCell
   );
 
+  // console.log('Updated row data', rowData);
+
   React.useEffect(() => {
-    setInitialData(initialRowData);
+    setData(initialRowData);
   }, []);
 
   return (
@@ -103,13 +107,13 @@ export function Spreadsheet() {
         ))}
       </div>
       <div className="Spreadsheet-Rows">
+        <RowContextMenu />
         {rowData.map((row, rowIndex) => (
-          <div className="Spreadsheet-Row" key={`row${rowIndex + 1}`}>
-            <div className="Spreadsheet-Row-Number">{rowIndex + 1}</div>
-            {row.map((cell) => (
-              <Cell {...cell} key={`cell${cell.row}${cell.column}`} />
+          <Row key={`row${rowIndex + 1}`} index={rowIndex}>
+            {row.map((cell, cellIndex) => (
+              <Cell row={rowIndex} column={cellIndex} {...cell} key={cell.id} />
             ))}
-          </div>
+          </Row>
         ))}
       </div>
     </div>

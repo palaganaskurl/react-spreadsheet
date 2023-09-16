@@ -3,22 +3,28 @@ import classNames from 'classnames';
 import { CellProps } from '../types';
 import { useSpreadsheet } from '../state/useSpreadsheet';
 
-const Cell = ({ width, height, row, column }: CellProps) => {
+const Cell = ({ width, height, row, column, id, value }: CellProps) => {
   const setCellValue = useSpreadsheet((state) => state.setCellValue);
   const [activeCellRow, activeCellColumn] = useSpreadsheet(
     (state) => state.activeCell
   );
   const setActiveCell = useSpreadsheet((state) => state.setActiveCell);
   const [isEditing, setEditing] = React.useState<boolean>(false);
+  // TODO: Consider this to be removed?
   const isContentEditable =
     activeCellRow === row && activeCellColumn === column;
 
   const cellRef = React.useRef<HTMLDivElement>(null);
 
   // TODO: On not double click, should overwrite all content
+  React.useEffect(() => {
+    // TODO: Fix this shit TypeScript issue.
+    cellRef!.current!.textContent = value;
+  }, [cellRef]);
 
   return (
     <div
+      id={id}
       onBlur={() => {
         setEditing(false);
       }}

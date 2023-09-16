@@ -1,24 +1,19 @@
 import { create } from 'zustand';
+import { v4 as uuidv4 } from 'uuid';
 import { CellData, HeaderData } from '../types';
 import { numberToExcelHeaderArray } from '../lib/spreadsheet';
 
 export type SpreadsheetState = {
-  activeCell: [CellData['column'], CellData['column']];
+  activeCell: [number, number];
   data: Array<CellData[]>;
-  getCellValue: (
-    row: CellData['row'],
-    column: CellData['column']
-  ) => CellData['value'];
+  getCellValue: (row: number, column: number) => CellData['value'];
   headers: HeaderData[];
-  setActiveCell: (row: CellData['row'], column: CellData['column']) => void;
-  setCellValue: (
-    row: CellData['row'],
-    column: CellData['column'],
-    value: CellData['value']
-  ) => void;
+  insertNewRowAt: (row: number, where: 'before' | 'after') => void;
+  setActiveCell: (row: number, column: number) => void;
+  setCellValue: (row: number, column: number, value: CellData['value']) => void;
   setColumnWidth: (column: number, width: number) => void;
+  setData: (data: Array<CellData[]>) => void;
   setHeaders: (headers: HeaderData[]) => void;
-  setInitialData: (initialData: Array<CellData[]>) => void;
 };
 
 const DEFAULT_COLUMN_WIDTH = 50;
@@ -35,21 +30,15 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
     label: header,
   })),
   activeCell: [0, 0],
-  setInitialData: (initialData: Array<CellData[]>) => {
-    set({
-      data: initialData,
-    });
+  setData: (data: Array<CellData[]>) => {
+    set({ data });
   },
-  getCellValue: (row: CellData['row'], column: CellData['column']) => {
+  getCellValue: (row: number, column: number) => {
     const { data } = get();
 
     return data[row][column].value;
   },
-  setCellValue: (
-    row: CellData['row'],
-    column: CellData['column'],
-    value: CellData['value']
-  ) => {
+  setCellValue: (row: number, column: number, value: CellData['value']) => {
     const { data } = get();
 
     if (value !== undefined) {
@@ -64,8 +53,8 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
     const { data } = get();
 
     const updatedRowHeight = data.map((row) => {
-      const rowCopy = row.map((cell) => {
-        if (cell.column === column) {
+      const rowCopy = row.map((cell, columnIndex) => {
+        if (columnIndex === column) {
           return {
             ...cell,
             ...{ width },
@@ -82,7 +71,7 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
       data: updatedRowHeight,
     });
   },
-  setActiveCell: (row: CellData['row'], column: CellData['column']) => {
+  setActiveCell: (row: number, column: number) => {
     set({
       activeCell: [row, column],
     });
@@ -90,6 +79,29 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
   setHeaders: (headers: HeaderData[]) => {
     set({
       headers,
+    });
+  },
+  insertNewRowAt: (row: number, where: 'before' | 'after') => {
+    const { data, headers } = get();
+    const rowIndex = where === 'before' ? row : row + 1;
+    const newUUIDs = [];
+
+    console.log('data before', data);
+
+    for (let i = 0; i < headers.length; i++) {
+      newUUIDs.push({
+        height: 30,
+        width: 50,
+        id: uuidv4(),
+      });
+    }
+
+    data.splice(rowIndex, 0, newUUIDs);
+
+    console.log('data after', data);
+
+    set({
+      data: [...data],
     });
   },
 }));
