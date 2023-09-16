@@ -1,9 +1,102 @@
-.Spreadsheet-Column-Header {
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800;900&display=swap');
+
+.Spreadsheet * {
+  font-family: 'Inter';
 }
 
-.Spreadsheet-Column-Header div {
-  display: inline-block;
-  width: 30px;
-  border: 1px solid gray;
-  text-align: center;
+.Spreadsheet-Column-Headers {
+  display: flex;
+  flex-direction: row;
+}
+
+.Spreadsheet-Column-Headers > .Spreadsheet-Column-Header {
+  border-bottom: thin solid #e0e0e0;
+  border-right: thin solid #e0e0e0;
+  border-top: thin solid #e0e0e0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.Spreadsheet-Rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.Spreadsheet-Row {
+  display: flex;
+  flex-direction: row;
+}
+
+.Spreadsheet-Row-Number {
+  min-width: 50px;
+  min-height: 30px;
+  background-color: #f5f5f5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  border-right: thin solid #e0e0e0;
+  border-left: thin solid #e0e0e0;
+  border-bottom: thin solid #e0e0e0;
+}
+
+.Spreadsheet-Row-Number-First {
+  border-top: thin solid #e0e0e0 !important;
+}
+
+.Spreadsheet-Cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: left;
+
+  border-bottom: thin solid #e0e0e0;
+  border-right: thin solid #e0e0e0;
+
+  padding: 4px;
+}
+
+.Spreadsheet-Active-Cell {
+  -webkit-box-shadow: inset 0px 0px 0px 2px #0b57d0;
+  -moz-box-shadow: inset 0px 0px 0px 2px #0b57d0;
+  box-shadow: inset 0px 0px 0px 2px #0b57d0;
+  caret-color: auto;
+}
+
+.Spreadsheet-Active-Cell[contenteditable='true'],
+.Spreadsheet-Active-Cell:focus-visible,
+.Spreadsheet-Active-Cell:focus {
+  -webkit-box-shadow: inset 0px 0px 0px 2px #0b57d0;
+  -moz-box-shadow: inset 0px 0px 0px 2px #0b57d0;
+  box-shadow: inset 0px 0px 0px 2px #0b57d0;
+  outline: none;
+}
+
+.Spreadsheet-Active-Cell-No-Content {
+  caret-color: transparent !important;
+  cursor: default;
+}
+
+.Spreadsheet-Formula-Bar {
+  display: flex;
+  flex-direction: row;
+  padding: 6px;
+}
+
+.Spreadsheet-Formula-Bar > .Spreadsheet-Formula-Bar-Active-Cell {
+  width: 10%;
+  border-right: 2px solid gray;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.Spreadsheet-Formula-Bar > .Spreadsheet-Formula {
+  width: 70%;
+}
+
+.ProseMirror p {
+  height: inherit;
+  border: none;
 }
