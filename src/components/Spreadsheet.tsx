@@ -28,6 +28,7 @@ export function Spreadsheet() {
         width: DEFAULT_COLUMN_WIDTH,
         height: DEFAULT_ROW_HEIGHT,
         id: uuidv4(),
+        selected: false,
       });
     }
   }

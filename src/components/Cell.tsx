@@ -3,7 +3,15 @@ import classNames from 'classnames';
 import { CellProps } from '../types';
 import { useSpreadsheet } from '../state/useSpreadsheet';
 
-const Cell = ({ width, height, row, column, id, value }: CellProps) => {
+const Cell = ({
+  width,
+  height,
+  row,
+  column,
+  id,
+  value,
+  selected,
+}: CellProps) => {
   const setCellValue = useSpreadsheet((state) => state.setCellValue);
   const [activeCellRow, activeCellColumn] = useSpreadsheet(
     (state) => state.activeCell
@@ -22,12 +30,25 @@ const Cell = ({ width, height, row, column, id, value }: CellProps) => {
     cellRef!.current!.textContent = value;
   }, [cellRef]);
 
+  const isDraggingCellRange = useSpreadsheet(
+    (state) => state.isDraggingCellRange
+  );
+  const setIsDraggingCellRange = useSpreadsheet(
+    (state) => state.setIsDraggingCellRange
+  );
+  const setCellRangeStart = useSpreadsheet((state) => state.setCellRangeStart);
+  const setCellRangeEnd = useSpreadsheet((state) => state.setCellRangeEnd);
+
   return (
     <div
       id={id}
       onBlur={() => {
         setEditing(false);
       }}
+      // TODO: Think of a better way to not rely on data-attributes
+      //  in range selection
+      data-row={row}
+      data-column={column}
       ref={cellRef}
       contentEditable={isContentEditable}
       aria-label="Cell"
@@ -63,6 +84,7 @@ const Cell = ({ width, height, row, column, id, value }: CellProps) => {
         'Spreadsheet-Active-Cell':
           activeCellRow === row && activeCellColumn === column,
         'Spreadsheet-Active-Cell-No-Content': !isEditing,
+        'Spreadsheet-Selected-Cell': selected,
       })}
       style={{
         minWidth: `${width}px`,
@@ -75,6 +97,28 @@ const Cell = ({ width, height, row, column, id, value }: CellProps) => {
           column,
           e.currentTarget.textContent?.trim() as string
         );
+      }}
+      onMouseDown={() => {
+        setIsDraggingCellRange(true);
+        setCellRangeStart([row, column]);
+      }}
+      onMouseMove={(e) => {
+        if (isDraggingCellRange && e.target instanceof HTMLDivElement) {
+          const targetRow = parseInt(e.target.dataset.row as string, 10);
+          const targetColumn = parseInt(e.target.dataset.column as string, 10);
+
+          setCellRangeEnd([targetRow, targetColumn]);
+        }
+      }}
+      onMouseUp={(e) => {
+        setIsDraggingCellRange(false);
+
+        if (e.target instanceof HTMLDivElement) {
+          const targetRow = parseInt(e.target.dataset.row as string, 10);
+          const targetColumn = parseInt(e.target.dataset.column as string, 10);
+
+          setCellRangeEnd([targetRow, targetColumn]);
+        }
       }}
     >
       <span

@@ -40,6 +40,12 @@
   border-right: thin solid #e0e0e0;
   border-left: thin solid #e0e0e0;
   border-bottom: thin solid #e0e0e0;
+
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
 }
 
 .Spreadsheet-Row-Number-First {
@@ -79,6 +85,11 @@
   cursor: default;
 }
 
+.Spreadsheet-Selected-Cell {
+  background-color: rgb(14, 101, 235);
+  opacity: 0.1;
+}
+
 .Spreadsheet-Formula-Bar {
   display: flex;
   flex-direction: row;
@@ -94,9 +105,4 @@
 
 .Spreadsheet-Formula-Bar > .Spreadsheet-Formula {
   width: 70%;
-}
-
-.ProseMirror p {
-  height: inherit;
-  border: none;
 }

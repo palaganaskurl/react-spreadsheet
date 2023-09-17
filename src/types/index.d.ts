@@ -11,17 +11,14 @@ export type ColumnData = {
 export type CellData = {
   height: number;
   id: string;
+  selected: boolean;
   value?: CellValue;
   width: number;
 };
 
-export interface CellProps {
+export interface CellProps extends CellData {
   column: number;
-  height: number;
-  id: string;
   row: number;
-  value?: CellValue;
-  width: number;
 }
 
 export interface RowProps {

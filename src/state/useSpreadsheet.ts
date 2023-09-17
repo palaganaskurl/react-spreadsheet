@@ -2,18 +2,26 @@ import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 import { CellData, ColumnData } from '../types';
 
+export type Point = [number, number];
+
 export type SpreadsheetState = {
   activeCell: [number, number];
+  cellRangeEnd: Point;
+  cellRangeStart: Point;
   columns: ColumnData[];
   data: Array<CellData[]>;
   getCellValue: (row: number, column: number) => CellData['value'];
   insertNewColumnAt: (column: number, where: 'before' | 'after') => void;
   insertNewRowAt: (row: number, where: 'before' | 'after') => void;
+  isDraggingCellRange: boolean;
   setActiveCell: (row: number, column: number) => void;
+  setCellRangeEnd: (cellRange: Point) => void;
+  setCellRangeStart: (cellRange: Point) => void;
   setCellValue: (row: number, column: number, value: CellData['value']) => void;
   setColumnWidth: (column: number, width: number) => void;
   setColumns: (columns: ColumnData[]) => void;
   setData: (data: Array<CellData[]>) => void;
+  setIsDraggingCellRange: (isDraggingCellRange: boolean) => void;
 };
 
 const DEFAULT_COLUMN_WIDTH = 50;
@@ -30,6 +38,9 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
       id: uuidv4(),
     })),
   activeCell: [0, 0],
+  cellRangeEnd: [-1, -1],
+  cellRangeStart: [-1, -1],
+  isDraggingCellRange: false,
   setData: (data: Array<CellData[]>) => {
     set({ data });
   },
@@ -91,6 +102,7 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
         height: columns[i].height,
         width: columns[i].width,
         id: uuidv4(),
+        selected: false,
       });
     }
 
@@ -115,11 +127,46 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
         height: DEFAULT_ROW_HEIGHT,
         width: DEFAULT_COLUMN_WIDTH,
         id: uuidv4(),
+        selected: false,
       });
     }
 
     set({
       data: [...data],
+    });
+  },
+  setCellRangeStart: (point: Point) => {
+    set({
+      cellRangeStart: point,
+    });
+  },
+  setCellRangeEnd: (point: Point) => {
+    const { cellRangeStart, data } = get();
+
+    const [startRow, startCol] = cellRangeStart;
+    const [endRow, endCol] = point;
+
+    // Clear existing selections before making new selections
+    for (let i = 0; i < data.length; i++) {
+      for (let j = 0; j < data.length; j++) {
+        data[i][j].selected = false;
+      }
+    }
+
+    for (let i = startRow; i <= endRow; i++) {
+      for (let j = startCol; j <= endCol; j++) {
+        data[i][j].selected = true;
+      }
+    }
+
+    set({
+      cellRangeEnd: point,
+      data: [...data],
+    });
+  },
+  setIsDraggingCellRange: (isDraggingCellRange: boolean) => {
+    set({
+      isDraggingCellRange,
     });
   },
 }));
