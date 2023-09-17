@@ -94,6 +94,10 @@
   background-color: rgb(160 195 255 / 20%);
   position: absolute;
   z-index: 0;
+}
+
+.Spreadsheet-Selection-Overlay-After {
+  z-index: 20;
   -webkit-box-shadow: inset 0px 0px 0px 2px #0b57d0;
   -moz-box-shadow: inset 0px 0px 0px 2px #0b57d0;
   box-shadow: inset 0px 0px 0px 2px #0b57d0;
