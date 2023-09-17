@@ -10,6 +10,7 @@ import RowContextMenu from './RowContextMenu';
 import ColumnContextMenu from './ColumnContextMenu';
 import Column from './Column';
 import { numberToExcelHeader } from '../lib/spreadsheet';
+import SelectionOverlay from './SelectionOverlay';
 
 export function Spreadsheet() {
   const DEFAULT_COLUMN_WIDTH = 50;
@@ -28,7 +29,6 @@ export function Spreadsheet() {
         width: DEFAULT_COLUMN_WIDTH,
         height: DEFAULT_ROW_HEIGHT,
         id: uuidv4(),
-        selected: false,
       });
     }
   }
@@ -79,6 +79,7 @@ export function Spreadsheet() {
       </div>
       <RowContextMenu />
       <ColumnContextMenu />
+      <SelectionOverlay />
     </div>
   );
 }

@@ -3,15 +3,7 @@ import classNames from 'classnames';
 import { CellProps } from '../types';
 import { useSpreadsheet } from '../state/useSpreadsheet';
 
-const Cell = ({
-  width,
-  height,
-  row,
-  column,
-  id,
-  value,
-  selected,
-}: CellProps) => {
+const Cell = ({ width, height, row, column, id, value }: CellProps) => {
   const setCellValue = useSpreadsheet((state) => state.setCellValue);
   const [activeCellRow, activeCellColumn] = useSpreadsheet(
     (state) => state.activeCell
@@ -84,7 +76,6 @@ const Cell = ({
         'Spreadsheet-Active-Cell':
           activeCellRow === row && activeCellColumn === column,
         'Spreadsheet-Active-Cell-No-Content': !isEditing,
-        'Spreadsheet-Selected-Cell': selected,
       })}
       style={{
         minWidth: `${width}px`,
@@ -101,6 +92,7 @@ const Cell = ({
       onMouseDown={() => {
         setIsDraggingCellRange(true);
         setCellRangeStart([row, column]);
+        setActiveCell(row, column);
       }}
       onMouseMove={(e) => {
         if (isDraggingCellRange && e.target instanceof HTMLDivElement) {

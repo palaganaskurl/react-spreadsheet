@@ -4,10 +4,18 @@ import { CellData, ColumnData } from '../types';
 
 export type Point = [number, number];
 
+export interface CellSelection {
+  height: number;
+  left: number;
+  top: number;
+  width: number;
+}
+
 export type SpreadsheetState = {
   activeCell: [number, number];
-  cellRangeEnd: Point;
-  cellRangeStart: Point;
+  cellRangeEnd: Point; // TODO: Consider removing this
+  cellRangeSelection: CellSelection;
+  cellRangeStart: Point; // TODO: Consider removing this
   columns: ColumnData[];
   data: Array<CellData[]>;
   getCellValue: (row: number, column: number) => CellData['value'];
@@ -41,6 +49,12 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
   cellRangeEnd: [-1, -1],
   cellRangeStart: [-1, -1],
   isDraggingCellRange: false,
+  cellRangeSelection: {
+    top: 0,
+    left: 0,
+    height: 0,
+    width: 0,
+  },
   setData: (data: Array<CellData[]>) => {
     set({ data });
   },
@@ -127,7 +141,6 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
         height: DEFAULT_ROW_HEIGHT,
         width: DEFAULT_COLUMN_WIDTH,
         id: uuidv4(),
-        selected: false,
       });
     }
 
@@ -141,27 +154,44 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
     });
   },
   setCellRangeEnd: (point: Point) => {
-    const { cellRangeStart, data } = get();
+    const { cellRangeStart } = get();
 
     const [startRow, startCol] = cellRangeStart;
     const [endRow, endCol] = point;
 
-    // Clear existing selections before making new selections
-    for (let i = 0; i < data.length; i++) {
-      for (let j = 0; j < data.length; j++) {
-        data[i][j].selected = false;
-      }
+    const startBoundingClientRect = document
+      .querySelector(`[data-row="${startRow}"][data-column="${startCol}"]`)
+      ?.getBoundingClientRect();
+
+    let width = 0;
+    let height = 0;
+
+    for (let i = startCol; i <= endCol; i++) {
+      const boundingClientRect = document
+        .querySelector(`[data-column="${i}"]`)
+        ?.getBoundingClientRect();
+      width += boundingClientRect?.width || 0;
     }
 
     for (let i = startRow; i <= endRow; i++) {
-      for (let j = startCol; j <= endCol; j++) {
-        data[i][j].selected = true;
-      }
+      const boundingClientRect = document
+        .querySelector(`[data-column="${i}"]`)
+        ?.getBoundingClientRect();
+      height += boundingClientRect?.height || 0;
     }
+
+    // Subtract 1px to width and height to make the selection border more visible.
+    --width;
+    --height;
 
     set({
       cellRangeEnd: point,
-      data: [...data],
+      cellRangeSelection: {
+        width,
+        top: startBoundingClientRect!.y,
+        left: startBoundingClientRect!.x,
+        height,
+      },
     });
   },
   setIsDraggingCellRange: (isDraggingCellRange: boolean) => {

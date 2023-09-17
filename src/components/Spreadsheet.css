@@ -17,6 +17,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
+
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
 }
 
 .Spreadsheet-Rows {
@@ -57,11 +63,10 @@
   justify-content: center;
   align-items: center;
   text-align: left;
-
   border-bottom: thin solid #e0e0e0;
   border-right: thin solid #e0e0e0;
-
   padding: 4px;
+  z-index: 20;
 }
 
 .Spreadsheet-Active-Cell {
@@ -85,9 +90,13 @@
   cursor: default;
 }
 
-.Spreadsheet-Selected-Cell {
-  background-color: rgb(14, 101, 235);
-  opacity: 0.1;
+.Spreadsheet-Selection-Overlay {
+  background-color: rgb(160 195 255 / 20%);
+  position: absolute;
+  z-index: 0;
+  -webkit-box-shadow: inset 0px 0px 0px 2px #0b57d0;
+  -moz-box-shadow: inset 0px 0px 0px 2px #0b57d0;
+  box-shadow: inset 0px 0px 0px 2px #0b57d0;
 }
 
 .Spreadsheet-Formula-Bar {
