@@ -159,23 +159,31 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
     const [startRow, startCol] = cellRangeStart;
     const [endRow, endCol] = point;
 
+    const startCellCol = Math.min(startCol, endCol);
+    const startCellRow = Math.min(startRow, endRow);
+
+    const endCellCol = Math.max(startCol, endCol);
+    const endCellRow = Math.max(startRow, endRow);
+
     const startBoundingClientRect = document
-      .querySelector(`[data-row="${startRow}"][data-column="${startCol}"]`)
+      .querySelector(
+        `[data-row="${startCellRow}"][data-column="${startCellCol}"]`
+      )
       ?.getBoundingClientRect();
 
     let width = 0;
     let height = 0;
 
-    for (let i = startCol; i <= endCol; i++) {
+    for (let i = startCellCol; i <= endCellCol; i++) {
       const boundingClientRect = document
         .querySelector(`[data-column="${i}"]`)
         ?.getBoundingClientRect();
       width += boundingClientRect?.width || 0;
     }
 
-    for (let i = startRow; i <= endRow; i++) {
+    for (let i = startCellRow; i <= endCellRow; i++) {
       const boundingClientRect = document
-        .querySelector(`[data-column="${i}"]`)
+        .querySelector(`[data-row="${i}"]`)
         ?.getBoundingClientRect();
       height += boundingClientRect?.height || 0;
     }
