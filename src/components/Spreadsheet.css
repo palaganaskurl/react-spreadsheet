@@ -114,8 +114,28 @@
   border-right: 2px solid gray;
   padding-top: 2px;
   padding-bottom: 2px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 .Spreadsheet-Formula-Bar > .Spreadsheet-Formula {
   width: 70%;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}
+
+.Spreadsheet-Formula-Bar .Spreadsheet-Formula-Editor-Icon {
+  display: flex;
+  flex-direction: row;
+  padding: 10px;
+  align-items: center;
+}
+
+.Spreadsheet-Formula-Bar .Spreadsheet-Formula-Editor {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  padding: 10px;
 }

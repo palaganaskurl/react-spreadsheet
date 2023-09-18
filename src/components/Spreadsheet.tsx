@@ -11,13 +11,14 @@ import ColumnContextMenu from './ColumnContextMenu';
 import Column from './Column';
 import { numberToExcelHeader } from '../lib/spreadsheet';
 import SelectionOverlay from './SelectionOverlay';
+import FormulaEditor from './FormulaEditor';
 
 export function Spreadsheet() {
   const DEFAULT_COLUMN_WIDTH = 50;
   const DEFAULT_ROW_HEIGHT = 30;
 
-  const ROW_COUNT = 10;
-  const COLUMN_COUNT = 10;
+  const ROW_COUNT = 20;
+  const COLUMN_COUNT = 20;
 
   const initialRowData: Array<CellData[]> = [];
 
@@ -53,10 +54,7 @@ export function Spreadsheet() {
           {numberToExcelHeader(activeCellColumn + 1)}
           {activeCellRow + 1}
         </div>
-        <div className="Spreadsheet-Formula">
-          fx
-          <input type="text" />
-        </div>
+        <FormulaEditor />
       </div>
       <div className="Spreadsheet-Column-Headers">
         <div className="Spreadsheet-Row-Number Spreadsheet-Row-Number-First" />

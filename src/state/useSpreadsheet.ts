@@ -34,7 +34,7 @@ export type SpreadsheetState = {
 
 const DEFAULT_COLUMN_WIDTH = 50;
 const DEFAULT_ROW_HEIGHT = 30;
-const COLUMN_COUNT = 10;
+const COLUMN_COUNT = 20;
 
 const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
   data: [],
@@ -61,7 +61,11 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
   getCellValue: (row: number, column: number) => {
     const { data } = get();
 
-    return data[row][column].value;
+    if (data[row] && data[row][column]) {
+      return data[row][column]?.value;
+    }
+
+    return '';
   },
   setCellValue: (row: number, column: number, value: CellData['value']) => {
     const { data } = get();
@@ -71,7 +75,7 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
     }
 
     set({
-      data,
+      data: [...data],
     });
   },
   setColumnWidth: (column: number, width: number) => {

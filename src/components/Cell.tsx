@@ -20,7 +20,7 @@ const Cell = ({ width, height, row, column, id, value }: CellProps) => {
   React.useEffect(() => {
     // TODO: Fix this shit TypeScript issue.
     cellRef!.current!.textContent = value;
-  }, [cellRef]);
+  }, [cellRef, value]);
 
   const isDraggingCellRange = useSpreadsheet(
     (state) => state.isDraggingCellRange
