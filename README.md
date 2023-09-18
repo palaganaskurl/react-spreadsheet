@@ -4,6 +4,7 @@
 
 - https://github.com/react-grid-layout/react-resizable (For column resizing)
 - https://github.com/LesterLyu/fast-formula-parser (For formula parsing)
+- https://github.com/fkhadra/react-contexify (For context menu)
 
 ## TODO
 
