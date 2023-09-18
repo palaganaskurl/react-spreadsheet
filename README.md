@@ -9,6 +9,14 @@
 
 - [ ] Show selected cell range beside formula editor.
 - [ ] Cell range formula handling.
+- [ ] Insert new row
+- [ ] Current selection not adjusting when resizing column / and row possibly.
+- [ ] Functionalities in Row and Column Context Menu
+- [ ] Sheets
+- [ ] Formatting of cell content
+- [ ] Cell context menu
+- [ ] Virtualization / Optimizations
+- [ ] See other TODO in the code
 
 # React Package Starter
 
