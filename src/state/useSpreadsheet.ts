@@ -19,6 +19,7 @@ export type SpreadsheetState = {
   columns: ColumnData[];
   data: Array<CellData[]>;
   getCellValue: (row: number, column: number) => CellData['value'];
+  getMatrixValues: () => Array<CellData['value'][]>;
   insertNewColumnAt: (column: number, where: 'before' | 'after') => void;
   insertNewRowAt: (row: number, where: 'before' | 'after') => void;
   isDraggingCellRange: boolean;
@@ -209,6 +210,15 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
   setIsDraggingCellRange: (isDraggingCellRange: boolean) => {
     set({
       isDraggingCellRange,
+    });
+  },
+  getMatrixValues: () => {
+    const { data } = get();
+
+    return data.map((row) => {
+      const rowCopy = row.map((cell) => cell?.value);
+
+      return rowCopy;
     });
   },
 }));

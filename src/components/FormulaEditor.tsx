@@ -1,5 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
+import FormulaParser from 'fast-formula-parser';
 import { useSpreadsheet } from '../state/useSpreadsheet';
 
 const FormulaEditor = () => {
@@ -8,6 +9,7 @@ const FormulaEditor = () => {
   );
   const setCellValue = useSpreadsheet((state) => state.setCellValue);
   const getCellValue = useSpreadsheet((state) => state.getCellValue);
+  const getMatrixValues = useSpreadsheet((state) => state.getMatrixValues);
 
   const onFormulaInput = (e: React.FormEvent<HTMLDivElement>) => {
     setCellValue(
@@ -25,6 +27,61 @@ const FormulaEditor = () => {
     // Fix this shit TypeScript issue.
     formulaRef!.current!.textContent = activeCellValue;
   }, [activeCellValue]);
+
+  const onEnter = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const data = getMatrixValues();
+
+    const formula = e.currentTarget.textContent?.trim();
+
+    const formulaParser = new FormulaParser({
+      //   // Variable used in formulas (defined name)
+      //   // Should only return range reference or cell reference
+      //   onVariable: (name, sheetName) => {
+      //     // If it is a range reference (A1:B2)
+      //     return {
+      //       sheet: 'sheet name',
+      //       from: {
+      //         row: 1,
+      //         col: 1,
+      //       },
+      //       to: {
+      //         row: 2,
+      //         col: 2,
+      //       },
+      //     };
+      //     // If it is a cell reference (A1)
+      //     return {
+      //       sheet: 'sheet name',
+      //       row: 1,
+      //       col: 1,
+      //     };
+      //   },
+      //   // retrieve cell value
+      onCell: ({ row, col }: { col: number; row: number; sheet: string }) =>
+        data[row - 1][col - 1],
+      //   // retrieve range values
+      //   onRange: (ref) => {
+      //     // using 1-based index
+      //     // Be careful when ref.to.col is MAX_COLUMN or ref.to.row is MAX_ROW, this will result in
+      //     // unnecessary loops in this approach.
+      //     const arr = [];
+      //     for (let row = ref.from.row; row <= ref.to.row; row++) {
+      //       const innerArr = [];
+      //       if (data[row - 1]) {
+      //         for (let col = ref.from.col; col <= ref.to.col; col++) {
+      //           innerArr.push(data[row - 1][col - 1]);
+      //         }
+      //       }
+      //       arr.push(innerArr);
+      //     }
+      //     return arr;
+      //   },
+    });
+
+    // Position of the parsed formula
+    // const position = { row: 1, col: 1, sheet: 'Sheet1' };
+    console.log('parser parse', formulaParser.parse(formula));
+  };
 
   return (
     <div
@@ -51,6 +108,14 @@ const FormulaEditor = () => {
         })}
         onInput={onFormulaInput}
         ref={formulaRef}
+        onKeyUp={(e) => {
+          if (e.key === 'Enter') {
+            onEnter(e);
+          }
+        }}
+        tabIndex={0}
+        aria-label="Formula Editor"
+        role="textbox"
       />
     </div>
   );

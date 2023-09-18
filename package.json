@@ -1,5 +1,5 @@
 {
-  "name": "tsup-react-package-starter",
+  "name": "@palaganaskurl/react-spreadsheet",
   "description": "",
   "version": "0.0.0",
   "author": "",
@@ -119,6 +119,7 @@
     "eslint-plugin-storybook": "0.6.11",
     "eslint-plugin-typescript-sort-keys": "2.3.0",
     "eslint-plugin-unused-imports": "2.0.0",
+    "fast-formula-parser": "^1.0.19",
     "husky": "8.0.3",
     "jest": "29.5.0",
     "lint-staged": "13.2.1",

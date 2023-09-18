@@ -1,3 +1,15 @@
+# React Spreadsheet
+
+## Dependencies
+
+- https://github.com/react-grid-layout/react-resizable (For column resizing)
+- https://github.com/LesterLyu/fast-formula-parser (For formula parsing)
+
+## TODO
+
+- [ ] Show selected cell range beside formula editor.
+- [ ] Cell range formula handling.
+
 # React Package Starter
 
 This is a simple and slightly opinionated starter kit for developing and publishing React packages. It comes with a several pre-configured tools, so you could focus on coding instead of configuring a project for the nth time.
