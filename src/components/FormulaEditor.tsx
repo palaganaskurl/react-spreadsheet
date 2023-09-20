@@ -1,5 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
+// @ts-expect-error
 import FormulaParser from 'fast-formula-parser';
 import { useSpreadsheet } from '../state/useSpreadsheet';
 

@@ -10,6 +10,7 @@ export default {
 } as Meta<typeof Spreadsheet>;
 
 const Template: StoryFn<typeof Spreadsheet> = (args) => (
+  // @ts-expect-error
   <Spreadsheet {...args} />
 );
 
