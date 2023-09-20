@@ -10,6 +10,7 @@
 
 - [ ] Show selected cell range beside formula editor.
 - [ ] Cell range formula handling.
+- [ ] When the formula editor has "=" on start, add functionality to select cells
 - [ ] On click out of cell, add some functionality
 - [ ] Current selection not adjusting when resizing column / and row possibly.
 - [ ] Functionalities in Row and Column Context Menu
