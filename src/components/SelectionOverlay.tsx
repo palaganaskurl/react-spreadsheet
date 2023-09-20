@@ -3,7 +3,6 @@ import classNames from 'classnames';
 import { useSpreadsheet } from '../state/useSpreadsheet';
 
 const SelectionOverlay = () => {
-  // TODO: Selection when backwards not working.
   // TODO: Try implementing this also on one selected cell
   const cellRangeSelection = useSpreadsheet(
     (state) => state.cellRangeSelection

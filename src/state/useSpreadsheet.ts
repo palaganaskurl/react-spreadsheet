@@ -26,6 +26,11 @@ export type SpreadsheetState = {
   setActiveCell: (row: number, column: number) => void;
   setCellRangeEnd: (cellRange: Point) => void;
   setCellRangeStart: (cellRange: Point) => void;
+  setCellResult: (
+    row: number,
+    column: number,
+    result: CellData['result']
+  ) => void;
   setCellValue: (row: number, column: number, value: CellData['value']) => void;
   setColumnWidth: (column: number, width: number) => void;
   setColumns: (columns: ColumnData[]) => void;
@@ -79,6 +84,15 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
       data: [...data],
     });
   },
+  setCellResult: (row: number, column: number, result: CellData['result']) => {
+    const { data } = get();
+
+    data[row][column].result = result;
+
+    set({
+      data: [...data],
+    });
+  },
   setColumnWidth: (column: number, width: number) => {
     const { data } = get();
 
@@ -122,6 +136,7 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
         width: columns[i].width,
         id: uuidv4(),
         selected: false,
+        value: '',
       });
     }
 
@@ -146,6 +161,7 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
         height: DEFAULT_ROW_HEIGHT,
         width: DEFAULT_COLUMN_WIDTH,
         id: uuidv4(),
+        value: '',
       });
     }
 
@@ -169,6 +185,22 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
 
     const endCellCol = Math.max(startCol, endCol);
     const endCellRow = Math.max(startRow, endRow);
+
+    if (
+      startCellCol < 0 ||
+      startCellRow < 0 ||
+      endCellRow < 0 ||
+      endCellCol < 0
+    ) {
+      set({
+        cellRangeSelection: {
+          width: 0,
+          top: 0,
+          left: 0,
+          height: 0,
+        },
+      });
+    }
 
     const startBoundingClientRect = document
       .querySelector(
@@ -199,13 +231,18 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
 
     set({
       cellRangeEnd: point,
-      cellRangeSelection: {
-        width,
-        top: startBoundingClientRect!.y,
-        left: startBoundingClientRect!.x,
-        height,
-      },
     });
+
+    if (startBoundingClientRect) {
+      set({
+        cellRangeSelection: {
+          width,
+          top: startBoundingClientRect?.y || 0,
+          left: startBoundingClientRect?.x || 0,
+          height,
+        },
+      });
+    }
   },
   setIsDraggingCellRange: (isDraggingCellRange: boolean) => {
     set({

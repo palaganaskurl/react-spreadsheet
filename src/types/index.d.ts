@@ -1,7 +1,5 @@
 import React from 'react';
 
-export type CellValue = number | string;
-
 export type ColumnData = {
   height: number;
   id: string;
@@ -11,7 +9,8 @@ export type ColumnData = {
 export type CellData = {
   height: number;
   id: string;
-  value?: CellValue;
+  result?: number;
+  value: string;
   width: number;
 };
 
