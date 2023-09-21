@@ -13,12 +13,15 @@ const FormulaEditor = () => {
   const getCellValue = useSpreadsheet((state) => state.getCellValue);
   const getMatrixValues = useSpreadsheet((state) => state.getMatrixValues);
 
+  const setIsSelectingCellsForFormula = useSpreadsheet(
+    (state) => state.setIsSelectingCellsForFormula
+  );
+
   const onFormulaInput = (e: React.FormEvent<HTMLDivElement>) => {
-    setCellValue(
-      activeCellRow,
-      activeCellColumn,
-      e.currentTarget.textContent?.trim() as string
-    );
+    const formula = e.currentTarget.textContent?.trim() || '';
+
+    setIsSelectingCellsForFormula(formula.startsWith('='));
+    setCellValue(activeCellRow, activeCellColumn, formula);
   };
 
   const activeCellValue = getCellValue(activeCellRow, activeCellColumn);
@@ -31,8 +34,6 @@ const FormulaEditor = () => {
 
   const onEnter = (e: React.KeyboardEvent<HTMLDivElement>) => {
     const data = getMatrixValues();
-
-    console.log('Data', data);
 
     const formula = e.currentTarget.textContent?.trim();
 
@@ -86,7 +87,6 @@ const FormulaEditor = () => {
     if (formula?.startsWith('=')) {
       const formulaResult = formulaParser.parse(formula.substring(1)) as number;
 
-      console.log('parser parse', formulaParser.parse(formula.substring(1)));
       setCellResult(activeCellRow, activeCellColumn, formulaResult);
     }
 

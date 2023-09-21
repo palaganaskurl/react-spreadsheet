@@ -36,3 +36,10 @@ export interface ColumnProps {
 export interface ColumnContextMenuProps {
   columnIndex: number;
 }
+
+export interface SelectionOverlayStyle {
+  height: number;
+  left: number;
+  top: number;
+  width: number;
+}

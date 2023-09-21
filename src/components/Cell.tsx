@@ -14,7 +14,6 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
 
   const cellRef = React.useRef<HTMLDivElement>(null);
 
-  // TODO: On not double click, should overwrite all content
   React.useEffect(() => {
     cellRef!.current!.textContent =
       result?.toString() || (value || '').toString();
@@ -38,6 +37,28 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
     'overwrite'
   );
 
+  const isSelectingCellsForFormula = useSpreadsheet(
+    (state) => state.isSelectingCellsForFormula
+  );
+  const setFormulaCellSelectionPoint = useSpreadsheet(
+    (state) => state.setFormulaCellSelectionPoint
+  );
+
+  const setIsSelectingCellsForFormula = useSpreadsheet(
+    (state) => state.setIsSelectingCellsForFormula
+  );
+
+  const setActiveCellConditionally = () => {
+    if (isSelectingCellsForFormula) {
+      setFormulaCellSelectionPoint([row, column]);
+      cellRef.current?.focus();
+
+      return;
+    }
+
+    setActiveCell(row, column);
+  };
+
   return (
     <div
       id={id}
@@ -54,17 +75,17 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
       role="textbox"
       tabIndex={0}
       suppressContentEditableWarning // TODO: Check on this later on
-      onClick={(event) => {
-        switch (event.detail) {
+      onClick={(e) => {
+        switch (e.detail) {
           case 1: {
-            setActiveCell(row, column);
+            setActiveCellConditionally();
             setWriteMethod('overwrite');
 
             break;
           }
           case 2: {
             setEditing(true);
-            setActiveCell(row, column);
+            setActiveCellConditionally();
             setWriteMethod('append');
 
             if (cellRef.current) {
@@ -92,7 +113,9 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
       className={classNames({
         'Spreadsheet-Cell': true,
         'Spreadsheet-Active-Cell':
-          activeCellRow === row && activeCellColumn === column,
+          activeCellRow === row &&
+          activeCellColumn === column &&
+          !isSelectingCellsForFormula,
         'Spreadsheet-Active-Cell-No-Content': !isEditing,
       })}
       style={{
@@ -106,15 +129,15 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
         }
       }}
       onInput={(e) => {
+        const cellContent = e.currentTarget.textContent?.trim() || '';
+
+        setIsSelectingCellsForFormula(cellContent.startsWith('='));
+
         if (writeMethod === 'overwrite') {
           setWriteMethod('append');
         }
 
-        setCellValue(
-          row,
-          column,
-          e.currentTarget.textContent?.trim() as string
-        );
+        setCellValue(row, column, cellContent);
       }}
       onMouseDown={() => {
         setMouseMoved(false);
@@ -151,16 +174,7 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
           setCellRangeEnd([-1, -1]);
         }
       }}
-    >
-      <span
-        style={{
-          minWidth: `${width}px`,
-          minHeight: `${height}px`,
-          maxWidth: `${width}px`,
-        }}
-      />
-    </div>
-    // &#xFEFF;
+    />
   );
 };
 

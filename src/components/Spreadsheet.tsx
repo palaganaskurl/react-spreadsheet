@@ -12,6 +12,7 @@ import Column from './Column';
 import { numberToExcelHeader } from '../lib/spreadsheet';
 import SelectionOverlay from './SelectionOverlay';
 import FormulaEditor from './FormulaEditor';
+import FormulaCellSelectionOverlay from './FormulaCellSelectionOverlay';
 
 export function Spreadsheet() {
   const DEFAULT_COLUMN_WIDTH = 50;
@@ -79,6 +80,7 @@ export function Spreadsheet() {
       <RowContextMenu />
       <ColumnContextMenu />
       <SelectionOverlay />
+      <FormulaCellSelectionOverlay />
     </div>
   );
 }

@@ -18,11 +18,13 @@ export type SpreadsheetState = {
   cellRangeStart: Point; // TODO: Consider removing this
   columns: ColumnData[];
   data: Array<CellData[]>;
+  formulaCellSelectionPoints: Set<Point>;
   getCellValue: (row: number, column: number) => CellData['value'];
   getMatrixValues: () => Array<CellData['value'][]>;
   insertNewColumnAt: (column: number, where: 'before' | 'after') => void;
   insertNewRowAt: (row: number, where: 'before' | 'after') => void;
   isDraggingCellRange: boolean;
+  isSelectingCellsForFormula: boolean;
   setActiveCell: (row: number, column: number) => void;
   setCellRangeEnd: (cellRange: Point) => void;
   setCellRangeStart: (cellRange: Point) => void;
@@ -35,7 +37,9 @@ export type SpreadsheetState = {
   setColumnWidth: (column: number, width: number) => void;
   setColumns: (columns: ColumnData[]) => void;
   setData: (data: Array<CellData[]>) => void;
+  setFormulaCellSelectionPoint: (formulaCellSelectionPoint: Point) => void;
   setIsDraggingCellRange: (isDraggingCellRange: boolean) => void;
+  setIsSelectingCellsForFormula: (isSelectingCellsForFormula: boolean) => void;
 };
 
 const DEFAULT_COLUMN_WIDTH = 50;
@@ -256,6 +260,20 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
       const rowCopy = row.map((cell) => cell?.value);
 
       return rowCopy;
+    });
+  },
+  isSelectingCellsForFormula: false,
+  setIsSelectingCellsForFormula: (isSelectingCellsForFormula: boolean) => {
+    set({ isSelectingCellsForFormula });
+  },
+  formulaCellSelectionPoints: new Set(),
+  setFormulaCellSelectionPoint: (formulaCellSelectionPoint: Point) => {
+    const { formulaCellSelectionPoints } = get();
+
+    formulaCellSelectionPoints.add(formulaCellSelectionPoint);
+
+    set({
+      formulaCellSelectionPoints: new Set(formulaCellSelectionPoints),
     });
   },
 }));
