@@ -2,17 +2,18 @@ import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useSpreadsheet } from '../state/useSpreadsheet';
 import { SelectionOverlayStyle } from '../types';
+import { selectionBorderWidth } from '../constants';
 
 const FormulaCellSelectionOverlay = () => {
-  const formulaCellSelectionPoints = useSpreadsheet(
-    (state) => state.formulaCellSelectionPoints
+  const formulaCellSelections = useSpreadsheet(
+    (state) => state.formulaCellSelections
   );
 
   const getOverlayStyles = (): SelectionOverlayStyle[] => {
     const styles: SelectionOverlayStyle[] = [];
 
-    formulaCellSelectionPoints.forEach((point) => {
-      const [row, column] = point;
+    formulaCellSelections.forEach((selection) => {
+      const [row, column] = selection.point;
       const cellElement = document.querySelector(
         `[data-row="${row}"][data-column="${column}"]`
       );
@@ -25,6 +26,7 @@ const FormulaCellSelectionOverlay = () => {
         cellElement?.getBoundingClientRect();
 
       styles.push({
+        borderColor: selection.borderColor,
         top: cellElementBoundingClientRect.top,
         left: cellElementBoundingClientRect.left,
         width: cellElementBoundingClientRect.width,
@@ -36,20 +38,16 @@ const FormulaCellSelectionOverlay = () => {
   };
 
   const commonStyles: React.CSSProperties = {
-    borderStyle: 'dashed',
     position: 'absolute',
     userSelect: 'none',
   };
 
-  const generateRandomColor = (): string =>
-    Math.floor(Math.random() * 16777215).toString(16);
-
+  // TODO: Fix some values here used in subtractions to
+  //  have more context in future changes.
   return (
-    <>
+    <div id="formulaSelectionOverlay">
       {getOverlayStyles().map((style) => {
-        const borderColor = generateRandomColor();
-
-        commonStyles.borderColor = `#${borderColor}`;
+        const borderColor = `#${style.borderColor}`;
 
         return (
           <div
@@ -64,45 +62,53 @@ const FormulaCellSelectionOverlay = () => {
           >
             <div
               style={{
-                borderTopWidth: 1,
-                top: '-1px',
-                width: `${style.width - 5}px`,
-                left: '-1px',
+                borderTopWidth: selectionBorderWidth,
+                borderTopColor: borderColor,
+                borderTopStyle: 'dashed',
+                top: '0px',
+                width: `${style.width}px`,
+                left: '0px',
                 ...commonStyles,
               }}
             />
             <div
               style={{
-                borderBottomWidth: 1,
+                borderBottomWidth: selectionBorderWidth,
+                borderBottomColor: borderColor,
+                borderBottomStyle: 'dashed',
                 top: `${style.height - 4}px`,
-                width: `${style.width - 5}px`,
-                left: '-1px',
+                width: `${style.width}px`,
+                left: '0px',
                 ...commonStyles,
               }}
             />
             <div
               style={{
-                borderRightWidth: 1,
-                top: '-1px',
-                height: `${style.height - 5}px`,
+                borderRightWidth: selectionBorderWidth,
+                borderRightColor: borderColor,
+                borderRightStyle: 'dashed',
+                top: '0px',
+                height: `${style.height}px`,
                 left: `${style.width - 4}px`,
                 ...commonStyles,
               }}
             />
             <div
               style={{
-                borderLeftWidth: 1,
-                top: '-1px',
-                left: '-1px',
-                height: `${style.height - 5}px`,
+                borderLeftWidth: selectionBorderWidth,
+                borderLeftColor: borderColor,
+                borderLeftStyle: 'dashed',
+                top: '0px',
+                left: '0px',
+                height: `${style.height}px`,
                 ...commonStyles,
               }}
             />
           </div>
         );
       })}
-    </>
+    </div>
   );
 };
 
-export default FormulaCellSelectionOverlay;
+export default React.memo(FormulaCellSelectionOverlay);

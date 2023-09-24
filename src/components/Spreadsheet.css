@@ -70,38 +70,9 @@
   outline: 0px solid transparent;
 }
 
-.Spreadsheet-Active-Cell {
-  -webkit-box-shadow: inset 0px 0px 0px 2px #0b57d0;
-  -moz-box-shadow: inset 0px 0px 0px 2px #0b57d0;
-  box-shadow: inset 0px 0px 0px 2px #0b57d0;
-  caret-color: auto;
-}
-
-.Spreadsheet-Active-Cell[contenteditable='true'],
-.Spreadsheet-Active-Cell:focus-visible,
-.Spreadsheet-Active-Cell:focus {
-  -webkit-box-shadow: inset 0px 0px 0px 2px #0b57d0;
-  -moz-box-shadow: inset 0px 0px 0px 2px #0b57d0;
-  box-shadow: inset 0px 0px 0px 2px #0b57d0;
-  outline: none;
-}
-
 .Spreadsheet-Active-Cell-No-Content {
   caret-color: transparent !important;
   cursor: default;
-}
-
-.Spreadsheet-Selection-Overlay {
-  background-color: rgb(160 195 255 / 20%);
-  position: absolute;
-  z-index: 0;
-}
-
-.Spreadsheet-Selection-Overlay-After {
-  z-index: 20;
-  -webkit-box-shadow: inset 0px 0px 0px 2px #0b57d0;
-  -moz-box-shadow: inset 0px 0px 0px 2px #0b57d0;
-  box-shadow: inset 0px 0px 0px 2px #0b57d0;
 }
 
 .Spreadsheet-Formula-Bar {

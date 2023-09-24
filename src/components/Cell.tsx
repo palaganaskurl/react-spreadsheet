@@ -6,9 +6,6 @@ import { placeCaretAtEnd } from '../lib/dom';
 
 const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
   const setCellValue = useSpreadsheet((state) => state.setCellValue);
-  const [activeCellRow, activeCellColumn] = useSpreadsheet(
-    (state) => state.activeCell
-  );
   const setActiveCell = useSpreadsheet((state) => state.setActiveCell);
   const [isEditing, setEditing] = React.useState<boolean>(false);
 
@@ -28,9 +25,6 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
   const setCellRangeStart = useSpreadsheet((state) => state.setCellRangeStart);
   const setCellRangeEnd = useSpreadsheet((state) => state.setCellRangeEnd);
 
-  // TODO: This fixed the issue where clicking on a cell makes it look like
-  //  it will be dragged. But it now shows a delay of clearing the selection
-  //   after dragging.
   const [mouseMoved, setMouseMoved] = React.useState<boolean>(false);
 
   const [writeMethod, setWriteMethod] = React.useState<'overwrite' | 'append'>(
@@ -51,7 +45,6 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
   const setActiveCellConditionally = () => {
     if (isSelectingCellsForFormula) {
       setFormulaCellSelectionPoint([row, column]);
-      cellRef.current?.focus();
 
       return;
     }
@@ -112,10 +105,6 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
       }}
       className={classNames({
         'Spreadsheet-Cell': true,
-        'Spreadsheet-Active-Cell':
-          activeCellRow === row &&
-          activeCellColumn === column &&
-          !isSelectingCellsForFormula,
         'Spreadsheet-Active-Cell-No-Content': !isEditing,
       })}
       style={{
@@ -131,7 +120,10 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
       onInput={(e) => {
         const cellContent = e.currentTarget.textContent?.trim() || '';
 
-        setIsSelectingCellsForFormula(cellContent.startsWith('='));
+        if (cellContent.startsWith('=')) {
+          setIsSelectingCellsForFormula(true);
+          setActiveCell(row, column);
+        }
 
         if (writeMethod === 'overwrite') {
           setWriteMethod('append');
@@ -143,7 +135,13 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
         setMouseMoved(false);
         setIsDraggingCellRange(true);
         setCellRangeStart([row, column]);
-        setActiveCell(row, column);
+
+        // To avoid double calling of setActiveCellConditionally,
+        //  will no execute setActiveCellConditionally here
+        //  to avoid adding two formula selection point.
+        if (!isSelectingCellsForFormula) {
+          setActiveCell(row, column);
+        }
       }}
       onMouseMove={(e) => {
         setMouseMoved(true);
@@ -171,7 +169,7 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
 
           setMouseMoved(false);
         } else {
-          setCellRangeEnd([-1, -1]);
+          setCellRangeEnd(null);
         }
       }}
     />

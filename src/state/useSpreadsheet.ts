@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 import { CellData, ColumnData } from '../types';
+import { generateRandomColor } from '../lib/color';
 
 export type Point = [number, number];
 
@@ -11,14 +12,19 @@ export interface CellSelection {
   width: number;
 }
 
+export interface FormulaCellSelection {
+  borderColor: string;
+  point: Point;
+}
+
 export type SpreadsheetState = {
   activeCell: [number, number];
   cellRangeEnd: Point; // TODO: Consider removing this
-  cellRangeSelection: CellSelection;
+  cellRangeSelection: CellSelection | null;
   cellRangeStart: Point; // TODO: Consider removing this
   columns: ColumnData[];
   data: Array<CellData[]>;
-  formulaCellSelectionPoints: Set<Point>;
+  formulaCellSelections: Set<FormulaCellSelection>;
   getCellValue: (row: number, column: number) => CellData['value'];
   getMatrixValues: () => Array<CellData['value'][]>;
   insertNewColumnAt: (column: number, where: 'before' | 'after') => void;
@@ -26,7 +32,7 @@ export type SpreadsheetState = {
   isDraggingCellRange: boolean;
   isSelectingCellsForFormula: boolean;
   setActiveCell: (row: number, column: number) => void;
-  setCellRangeEnd: (cellRange: Point) => void;
+  setCellRangeEnd: (cellRange: Point | null) => void;
   setCellRangeStart: (cellRange: Point) => void;
   setCellResult: (
     row: number,
@@ -59,12 +65,7 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
   cellRangeEnd: [-1, -1],
   cellRangeStart: [-1, -1],
   isDraggingCellRange: false,
-  cellRangeSelection: {
-    top: 0,
-    left: 0,
-    height: 0,
-    width: 0,
-  },
+  cellRangeSelection: null,
   setData: (data: Array<CellData[]>) => {
     set({ data });
   },
@@ -178,7 +179,13 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
       cellRangeStart: point,
     });
   },
-  setCellRangeEnd: (point: Point) => {
+  setCellRangeEnd: (point: Point | null) => {
+    if (point === null) {
+      set({ cellRangeSelection: null });
+
+      return;
+    }
+
     const { cellRangeStart } = get();
 
     const [startRow, startCol] = cellRangeStart;
@@ -196,14 +203,7 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
       endCellRow < 0 ||
       endCellCol < 0
     ) {
-      set({
-        cellRangeSelection: {
-          width: 0,
-          top: 0,
-          left: 0,
-          height: 0,
-        },
-      });
+      set({ cellRangeSelection: null });
     }
 
     const startBoundingClientRect = document
@@ -229,24 +229,14 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
       height += boundingClientRect?.height || 0;
     }
 
-    // Subtract 1px to width and height to make the selection border more visible.
-    --width;
-    --height;
-
     set({
-      cellRangeEnd: point,
+      cellRangeSelection: {
+        width,
+        top: startBoundingClientRect?.y || 0,
+        left: startBoundingClientRect?.x || 0,
+        height,
+      },
     });
-
-    if (startBoundingClientRect) {
-      set({
-        cellRangeSelection: {
-          width,
-          top: startBoundingClientRect?.y || 0,
-          left: startBoundingClientRect?.x || 0,
-          height,
-        },
-      });
-    }
   },
   setIsDraggingCellRange: (isDraggingCellRange: boolean) => {
     set({
@@ -266,14 +256,19 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
   setIsSelectingCellsForFormula: (isSelectingCellsForFormula: boolean) => {
     set({ isSelectingCellsForFormula });
   },
-  formulaCellSelectionPoints: new Set(),
+  formulaCellSelections: new Set(),
   setFormulaCellSelectionPoint: (formulaCellSelectionPoint: Point) => {
-    const { formulaCellSelectionPoints } = get();
+    // TODO: When a formula selection point is clicked again,
+    //  it should be removed.
+    const { formulaCellSelections } = get();
 
-    formulaCellSelectionPoints.add(formulaCellSelectionPoint);
+    formulaCellSelections.add({
+      point: formulaCellSelectionPoint,
+      borderColor: generateRandomColor(),
+    });
 
     set({
-      formulaCellSelectionPoints: new Set(formulaCellSelectionPoints),
+      formulaCellSelections: new Set(formulaCellSelections),
     });
   },
 }));

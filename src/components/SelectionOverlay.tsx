@@ -1,30 +1,85 @@
 import React from 'react';
-import classNames from 'classnames';
 import { useSpreadsheet } from '../state/useSpreadsheet';
+import { selectionBorderWidth } from '../constants';
 
 const SelectionOverlay = () => {
-  // TODO: Try implementing this also on one selected cell
   const cellRangeSelection = useSpreadsheet(
     (state) => state.cellRangeSelection
   );
   const isDraggingCellRange = useSpreadsheet(
     (state) => state.isDraggingCellRange
   );
+  const commonStyles: React.CSSProperties = {
+    position: 'absolute',
+    userSelect: 'none',
+    // TODO: Fix this, broken borders showing while dragging
+    // TODO: Cannot select inside selection
+    zIndex: isDraggingCellRange ? 0 : 20,
+  };
+  const borderColor = '#0b57d0';
+
+  if (cellRangeSelection === null) {
+    return null;
+  }
 
   return (
     <div
+      id="selectionRangeOverlay"
       style={{
         top: `${cellRangeSelection.top}px`,
         left: `${cellRangeSelection.left}px`,
         width: `${cellRangeSelection.width}px`,
         height: `${cellRangeSelection.height}px`,
+        backgroundColor: 'rgb(160 195 255 / 20%)',
+        ...commonStyles,
       }}
-      className={classNames({
-        'Spreadsheet-Selection-Overlay': true,
-        'Spreadsheet-Selection-Overlay-After': !isDraggingCellRange,
-      })}
-    />
+    >
+      <div
+        style={{
+          borderTopWidth: selectionBorderWidth,
+          borderTopColor: borderColor,
+          borderTopStyle: 'solid',
+          top: '0px',
+          width: `${cellRangeSelection.width}px`,
+          left: '0px',
+          ...commonStyles,
+        }}
+      />
+      <div
+        style={{
+          borderBottomWidth: selectionBorderWidth,
+          borderBottomColor: borderColor,
+          borderBottomStyle: 'solid',
+          top: `${cellRangeSelection.height - 4}px`,
+          width: `${cellRangeSelection.width}px`,
+          left: '0px',
+          ...commonStyles,
+        }}
+      />
+      <div
+        style={{
+          borderRightWidth: selectionBorderWidth,
+          borderRightColor: borderColor,
+          borderRightStyle: 'solid',
+          top: '0px',
+          height: `${cellRangeSelection.height}px`,
+          left: `${cellRangeSelection.width - 4}px`,
+          ...commonStyles,
+        }}
+      />
+      <div
+        style={{
+          borderLeftWidth: selectionBorderWidth,
+          borderLeftColor: borderColor,
+          borderLeftStyle: 'solid',
+          top: '0px',
+          left: '0px',
+          height: `${cellRangeSelection.height}px`,
+          ...commonStyles,
+        }}
+      />
+    </div>
   );
 };
 
-export default SelectionOverlay;
+export default React.memo(SelectionOverlay);

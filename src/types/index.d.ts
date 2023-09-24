@@ -38,6 +38,7 @@ export interface ColumnContextMenuProps {
 }
 
 export interface SelectionOverlayStyle {
+  borderColor: string;
   height: number;
   left: number;
   top: number;
