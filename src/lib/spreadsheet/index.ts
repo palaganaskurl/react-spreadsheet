@@ -27,7 +27,7 @@ const chars = [
   'Z',
 ];
 
-const numberToExcelHeader = (index: number): string => {
+export const numberToExcelHeader = (index: number): string => {
   const currentIndex = index - 1;
 
   const quotient = Math.floor(currentIndex / 26);
@@ -38,7 +38,7 @@ const numberToExcelHeader = (index: number): string => {
   return chars[currentIndex % 26];
 };
 
-const numberToExcelHeaderArray = (columnCount: number): string[] => {
+export const numberToExcelHeaderArray = (columnCount: number): string[] => {
   const columnHeaders = [];
 
   for (let i = 1; i <= columnCount; i++) {
@@ -48,4 +48,5 @@ const numberToExcelHeaderArray = (columnCount: number): string[] => {
   return columnHeaders;
 };
 
-export { numberToExcelHeader, numberToExcelHeaderArray };
+export const getCellAddressLabel = (row: number, column: number): string =>
+  `${numberToExcelHeader(column + 1)}${row + 1}`;

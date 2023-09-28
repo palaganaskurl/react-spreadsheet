@@ -146,7 +146,11 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
       onMouseMove={(e) => {
         setMouseMoved(true);
 
-        if (isDraggingCellRange && e.target instanceof HTMLDivElement) {
+        if (
+          isDraggingCellRange &&
+          !isSelectingCellsForFormula &&
+          e.target instanceof HTMLDivElement
+        ) {
           const targetRow = parseInt(e.target.dataset.row as string, 10);
           const targetColumn = parseInt(e.target.dataset.column as string, 10);
 
@@ -156,7 +160,7 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
       onMouseUp={(e) => {
         setIsDraggingCellRange(false);
 
-        if (mouseMoved) {
+        if (mouseMoved && !isSelectingCellsForFormula) {
           if (e.target instanceof HTMLDivElement) {
             const targetRow = parseInt(e.target.dataset.row as string, 10);
             const targetColumn = parseInt(

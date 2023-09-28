@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
-import { CellData, ColumnData } from '../types';
+import { CellData, ColumnData, FormulaEntity } from '../types';
 import { generateRandomColor } from '../lib/color';
+import { getCellAddressLabel } from '../lib/spreadsheet';
+import { getOperationCount } from '../lib/formula';
 
 export type Point = [number, number];
 
@@ -142,6 +144,7 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
         id: uuidv4(),
         selected: false,
         value: '',
+        formulaEntities: new Set<FormulaEntity>(),
       });
     }
 
@@ -167,6 +170,7 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
         width: DEFAULT_COLUMN_WIDTH,
         id: uuidv4(),
         value: '',
+        formulaEntities: new Set(),
       });
     }
 
@@ -258,18 +262,111 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
   },
   formulaCellSelections: new Set(),
   setFormulaCellSelectionPoint: (formulaCellSelectionPoint: Point) => {
-    // TODO: When a formula selection point is clicked again,
-    //  it should be removed.
-    const { formulaCellSelections } = get();
+    const { formulaCellSelections, activeCell, data } = get();
+    const [activeRow, activeColumn] = activeCell;
 
-    formulaCellSelections.add({
-      point: formulaCellSelectionPoint,
-      borderColor: generateRandomColor(),
-    });
+    const operationCount = getOperationCount(
+      data[activeRow][activeColumn].value
+    );
 
-    set({
-      formulaCellSelections: new Set(formulaCellSelections),
-    });
+    if (data[activeRow][activeColumn].formulaEntities.size === 0) {
+      const [row, column] = formulaCellSelectionPoint;
+      const cellAddress = getCellAddressLabel(row, column);
+      const formulaEntity: FormulaEntity = {
+        row,
+        column,
+        address: cellAddress,
+      };
+
+      data[activeRow][activeColumn].value = `=${cellAddress}`;
+      data[activeRow][activeColumn].formulaEntities.add(formulaEntity);
+
+      let inFormulaCellSelections = formulaCellSelections;
+
+      if (!formulaCellSelections) {
+        inFormulaCellSelections = new Set([
+          {
+            point: formulaCellSelectionPoint,
+            borderColor: generateRandomColor(),
+          },
+        ]);
+      } else {
+        inFormulaCellSelections.add({
+          point: formulaCellSelectionPoint,
+          borderColor: generateRandomColor(),
+        });
+      }
+
+      set({
+        formulaCellSelections: new Set(inFormulaCellSelections),
+        data: [...data],
+      });
+
+      return;
+    }
+
+    if (
+      operationCount ===
+      data[activeRow][activeColumn].formulaEntities.size - 1
+    ) {
+      const [row, column] = formulaCellSelectionPoint;
+      const cellAddress = getCellAddressLabel(row, column);
+      const formulaEntity: FormulaEntity = {
+        row,
+        column,
+        address: cellAddress,
+      };
+
+      const arrayFromFormulaEntities = Array.from(
+        data[activeRow][activeColumn].formulaEntities
+      );
+      const arrayFromFormulaCellSelections = Array.from(formulaCellSelections);
+
+      arrayFromFormulaCellSelections.pop();
+      const poppedEntity = arrayFromFormulaEntities.pop();
+      data[activeRow][activeColumn].value = data[activeRow][
+        activeColumn
+      ].value.replace(poppedEntity?.address || '', '');
+
+      const newFormulaCellSelectionsSet = new Set(
+        arrayFromFormulaCellSelections
+      );
+
+      newFormulaCellSelectionsSet.add({
+        point: formulaCellSelectionPoint,
+        borderColor: generateRandomColor(),
+      });
+      data[activeRow][activeColumn].formulaEntities = new Set(
+        arrayFromFormulaEntities
+      );
+      data[activeRow][activeColumn].formulaEntities.add(formulaEntity);
+      data[activeRow][activeColumn].value += cellAddress;
+
+      set({
+        formulaCellSelections: newFormulaCellSelectionsSet,
+        data: [...data],
+      });
+    } else {
+      const [row, column] = formulaCellSelectionPoint;
+      const cellAddress = getCellAddressLabel(row, column);
+      const formulaEntity: FormulaEntity = {
+        row,
+        column,
+        address: cellAddress,
+      };
+
+      data[activeRow][activeColumn].value += cellAddress;
+      data[activeRow][activeColumn].formulaEntities.add(formulaEntity);
+      formulaCellSelections.add({
+        point: formulaCellSelectionPoint,
+        borderColor: generateRandomColor(),
+      });
+
+      set({
+        formulaCellSelections: new Set(formulaCellSelections),
+        data: [...data],
+      });
+    }
   },
 }));
 

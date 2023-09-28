@@ -9,7 +9,7 @@ import Row from './Row';
 import RowContextMenu from './RowContextMenu';
 import ColumnContextMenu from './ColumnContextMenu';
 import Column from './Column';
-import { numberToExcelHeader } from '../lib/spreadsheet';
+import { getCellAddressLabel } from '../lib/spreadsheet';
 import SelectionOverlay from './SelectionOverlay';
 import FormulaEditor from './FormulaEditor';
 import FormulaCellSelectionOverlay from './FormulaCellSelectionOverlay';
@@ -33,6 +33,7 @@ export function Spreadsheet() {
         height: DEFAULT_ROW_HEIGHT,
         id: uuidv4(),
         value: '',
+        formulaEntities: new Set(),
       });
     }
   }
@@ -54,8 +55,7 @@ export function Spreadsheet() {
     <div className="Spreadsheet">
       <div className="Spreadsheet-Formula-Bar">
         <div className="Spreadsheet-Formula-Bar-Active-Cell">
-          {numberToExcelHeader(activeCellColumn + 1)}
-          {activeCellRow + 1}
+          {getCellAddressLabel(activeCellRow, activeCellColumn)}
         </div>
         <FormulaEditor />
       </div>

@@ -68,6 +68,7 @@
   padding: 4px;
   z-index: 20;
   outline: 0px solid transparent;
+  text-wrap: nowrap;
 }
 
 .Spreadsheet-Active-Cell-No-Content {

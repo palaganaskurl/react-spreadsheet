@@ -6,7 +6,14 @@ export type ColumnData = {
   width: number;
 };
 
+export type FormulaEntity = {
+  address: string;
+  column: number;
+  row: number;
+};
+
 export type CellData = {
+  formulaEntities: Set<FormulaEntity>;
   height: number;
   id: string;
   result?: number;
