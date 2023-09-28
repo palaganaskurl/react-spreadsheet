@@ -41,6 +41,9 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
   const setIsSelectingCellsForFormula = useSpreadsheet(
     (state) => state.setIsSelectingCellsForFormula
   );
+  const emptyFormulaCellSelectionPoints = useSpreadsheet(
+    (state) => state.emptyFormulaCellSelectionPoints
+  );
 
   const setActiveCellConditionally = () => {
     if (isSelectingCellsForFormula) {
@@ -101,6 +104,8 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
             column,
             e.currentTarget.textContent?.trim() as string
           );
+          setIsSelectingCellsForFormula(false);
+          emptyFormulaCellSelectionPoints();
         }
       }}
       className={classNames({

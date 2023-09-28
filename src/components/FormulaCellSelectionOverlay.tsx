@@ -9,6 +9,10 @@ const FormulaCellSelectionOverlay = () => {
     (state) => state.formulaCellSelections
   );
 
+  if (formulaCellSelections.size === 0) {
+    return null;
+  }
+
   const getOverlayStyles = (): SelectionOverlayStyle[] => {
     const styles: SelectionOverlayStyle[] = [];
 

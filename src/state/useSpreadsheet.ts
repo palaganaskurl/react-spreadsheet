@@ -26,6 +26,7 @@ export type SpreadsheetState = {
   cellRangeStart: Point; // TODO: Consider removing this
   columns: ColumnData[];
   data: Array<CellData[]>;
+  emptyFormulaCellSelectionPoints: () => void;
   formulaCellSelections: Set<FormulaCellSelection>;
   getCellValue: (row: number, column: number) => CellData['value'];
   getMatrixValues: () => Array<CellData['value'][]>;
@@ -261,6 +262,11 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
     set({ isSelectingCellsForFormula });
   },
   formulaCellSelections: new Set(),
+  emptyFormulaCellSelectionPoints: () => {
+    set({
+      formulaCellSelections: new Set(),
+    });
+  },
   setFormulaCellSelectionPoint: (formulaCellSelectionPoint: Point) => {
     const { formulaCellSelections, activeCell, data } = get();
     const [activeRow, activeColumn] = activeCell;
