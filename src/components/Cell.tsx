@@ -100,16 +100,33 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
         }
       }}
       onKeyUp={(e) => {
-        if (e.key === 'Enter') {
-          setEditing(false);
-          setActiveCell(row + 1, column);
-          setCellValue(
-            row,
-            column,
-            e.currentTarget.textContent?.trim() as string
-          );
-          setIsSelectingCellsForFormula(false);
-          emptyFormulaCellSelectionPoints();
+        switch (e.key) {
+          case 'Enter': {
+            setEditing(false);
+            setActiveCell(row + 1, column);
+            setCellValue(
+              row,
+              column,
+              e.currentTarget.textContent?.trim() as string
+            );
+            setIsSelectingCellsForFormula(false);
+            emptyFormulaCellSelectionPoints();
+
+            break;
+          }
+          case 'Escape': {
+            setEditing(false);
+            setIsSelectingCellsForFormula(false);
+            emptyFormulaCellSelectionPoints();
+
+            // TODO: Might cause issue, check if editing or selecting cells
+            //  before setting the value to empty
+            setCellValue(row, column, '');
+
+            break;
+          }
+          default:
+            break;
         }
       }}
       className={classNames({

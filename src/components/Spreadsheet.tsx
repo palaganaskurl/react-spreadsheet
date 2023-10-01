@@ -10,7 +10,7 @@ import RowContextMenu from './RowContextMenu';
 import ColumnContextMenu from './ColumnContextMenu';
 import Column from './Column';
 import { getCellAddressLabel } from '../lib/spreadsheet';
-import SelectionOverlay from './SelectionOverlay';
+import CellRangeSelectionOverlay from './CellRangeSelectionOverlay';
 import FormulaEditor from './FormulaEditor';
 import FormulaCellSelectionOverlay from './FormulaCellSelectionOverlay';
 import ActiveCellOverlay from './ActiveCellOverlay';
@@ -80,7 +80,7 @@ export function Spreadsheet() {
       </div>
       <RowContextMenu />
       <ColumnContextMenu />
-      <SelectionOverlay />
+      <CellRangeSelectionOverlay />
       <FormulaCellSelectionOverlay />
       <ActiveCellOverlay />
     </div>

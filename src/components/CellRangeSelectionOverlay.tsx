@@ -2,7 +2,7 @@ import React from 'react';
 import { useSpreadsheet } from '../state/useSpreadsheet';
 import { selectionBorderWidth } from '../constants';
 
-const SelectionOverlay = () => {
+const CellRangeSelectionOverlay = () => {
   const cellRangeSelection = useSpreadsheet(
     (state) => state.cellRangeSelection
   );
@@ -82,4 +82,4 @@ const SelectionOverlay = () => {
   );
 };
 
-export default React.memo(SelectionOverlay);
+export default React.memo(CellRangeSelectionOverlay);
