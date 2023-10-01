@@ -20,16 +20,8 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
     }
   }, [value, result]);
 
-  const isDraggingCellRange = useSpreadsheet(
-    (state) => state.isDraggingCellRange
-  );
-  const setIsDraggingCellRange = useSpreadsheet(
-    (state) => state.setIsDraggingCellRange
-  );
   const setCellRangeStart = useSpreadsheet((state) => state.setCellRangeStart);
   const setCellRangeEnd = useSpreadsheet((state) => state.setCellRangeEnd);
-
-  const [mouseMoved, setMouseMoved] = React.useState<boolean>(false);
 
   const [writeMethod, setWriteMethod] = React.useState<'overwrite' | 'append'>(
     'overwrite'
@@ -158,8 +150,7 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
         setCellValue(row, column, cellContent);
       }}
       onMouseDown={() => {
-        setMouseMoved(false);
-        setIsDraggingCellRange(true);
+        setCellRangeEnd(null);
         setCellRangeStart([row, column]);
 
         // To avoid double calling of setActiveCellConditionally,
@@ -170,12 +161,10 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
         }
       }}
       onMouseMove={(e) => {
-        setMouseMoved(true);
-
         if (
-          isDraggingCellRange &&
           !isSelectingCellsForFormula &&
-          e.target instanceof HTMLDivElement
+          e.target instanceof HTMLDivElement &&
+          e.buttons === 1
         ) {
           const targetRow = parseInt(e.target.dataset.row as string, 10);
           const targetColumn = parseInt(e.target.dataset.column as string, 10);
@@ -184,9 +173,7 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
         }
       }}
       onMouseUp={(e) => {
-        setIsDraggingCellRange(false);
-
-        if (mouseMoved && !isSelectingCellsForFormula) {
+        if (!isSelectingCellsForFormula) {
           if (e.target instanceof HTMLDivElement) {
             const targetRow = parseInt(e.target.dataset.row as string, 10);
             const targetColumn = parseInt(
@@ -196,8 +183,6 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
 
             setCellRangeEnd([targetRow, targetColumn]);
           }
-
-          setMouseMoved(false);
         } else {
           setCellRangeEnd(null);
         }

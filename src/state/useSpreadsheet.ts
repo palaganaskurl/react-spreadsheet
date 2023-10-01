@@ -21,9 +21,9 @@ export interface FormulaCellSelection {
 
 export type SpreadsheetState = {
   activeCell: [number, number];
-  cellRangeEnd: Point; // TODO: Consider removing this
+  cellRangeEnd: Point | null;
   cellRangeSelection: CellSelection | null;
-  cellRangeStart: Point; // TODO: Consider removing this
+  cellRangeStart: Point | null;
   columns: ColumnData[];
   data: Array<CellData[]>;
   emptyFormulaCellSelectionPoints: () => void;
@@ -32,7 +32,6 @@ export type SpreadsheetState = {
   getMatrixValues: () => Array<CellData['value'][]>;
   insertNewColumnAt: (column: number, where: 'before' | 'after') => void;
   insertNewRowAt: (row: number, where: 'before' | 'after') => void;
-  isDraggingCellRange: boolean;
   isSelectingCellsForFormula: boolean;
   setActiveCell: (row: number, column: number) => void;
   setCellRangeEnd: (cellRange: Point | null) => void;
@@ -47,7 +46,6 @@ export type SpreadsheetState = {
   setColumns: (columns: ColumnData[]) => void;
   setData: (data: Array<CellData[]>) => void;
   setFormulaCellSelectionPoint: (formulaCellSelectionPoint: Point) => void;
-  setIsDraggingCellRange: (isDraggingCellRange: boolean) => void;
   setIsSelectingCellsForFormula: (isSelectingCellsForFormula: boolean) => void;
 };
 
@@ -65,9 +63,8 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
       id: uuidv4(),
     })),
   activeCell: [0, 0],
-  cellRangeEnd: [-1, -1],
-  cellRangeStart: [-1, -1],
-  isDraggingCellRange: false,
+  cellRangeEnd: null,
+  cellRangeStart: null,
   cellRangeSelection: null,
   setData: (data: Array<CellData[]>) => {
     set({ data });
@@ -179,19 +176,27 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
       data: [...data],
     });
   },
-  setCellRangeStart: (point: Point) => {
+  setCellRangeStart: (point: Point | null) => {
     set({
       cellRangeStart: point,
     });
   },
   setCellRangeEnd: (point: Point | null) => {
     if (point === null) {
-      set({ cellRangeSelection: null });
+      set({
+        cellRangeSelection: null,
+        cellRangeStart: null,
+        cellRangeEnd: null,
+      });
 
       return;
     }
 
     const { cellRangeStart } = get();
+
+    if (cellRangeStart === null) {
+      return;
+    }
 
     const [startRow, startCol] = cellRangeStart;
     const [endRow, endCol] = point;
@@ -201,15 +206,6 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
 
     const endCellCol = Math.max(startCol, endCol);
     const endCellRow = Math.max(startRow, endRow);
-
-    if (
-      startCellCol < 0 ||
-      startCellRow < 0 ||
-      endCellRow < 0 ||
-      endCellCol < 0
-    ) {
-      set({ cellRangeSelection: null });
-    }
 
     const startBoundingClientRect = document
       .querySelector(
@@ -241,11 +237,6 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
         left: startBoundingClientRect?.x || 0,
         height,
       },
-    });
-  },
-  setIsDraggingCellRange: (isDraggingCellRange: boolean) => {
-    set({
-      isDraggingCellRange,
     });
   },
   getMatrixValues: () => {

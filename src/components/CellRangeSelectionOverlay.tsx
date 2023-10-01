@@ -6,15 +6,11 @@ const CellRangeSelectionOverlay = () => {
   const cellRangeSelection = useSpreadsheet(
     (state) => state.cellRangeSelection
   );
-  const isDraggingCellRange = useSpreadsheet(
-    (state) => state.isDraggingCellRange
-  );
   const commonStyles: React.CSSProperties = {
     position: 'absolute',
     userSelect: 'none',
-    // TODO: Fix this, broken borders showing while dragging
-    // TODO: Cannot select inside selection
-    zIndex: isDraggingCellRange ? 0 : 20,
+    pointerEvents: 'none',
+    zIndex: 20,
   };
   const borderColor = '#0b57d0';
 

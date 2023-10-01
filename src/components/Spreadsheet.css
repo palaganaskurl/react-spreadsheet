@@ -66,7 +66,6 @@
   border-bottom: thin solid #e0e0e0;
   border-right: thin solid #e0e0e0;
   padding: 4px;
-  z-index: 20;
   outline: 0px solid transparent;
   text-wrap: nowrap;
 }
