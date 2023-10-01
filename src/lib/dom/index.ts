@@ -1,12 +1,11 @@
 export const placeCaretAtEnd = (el: HTMLElement) => {
-  // TODO: Check why it selects all before placing the caret at the end.
-  el.focus();
-
+  const selection = window.getSelection();
   const range = document.createRange();
+
+  selection!.removeAllRanges();
   range.selectNodeContents(el);
   range.collapse(false);
-
-  const selection = window.getSelection();
-  selection!.removeAllRanges();
   selection!.addRange(range);
+
+  el.focus();
 };

@@ -12,9 +12,13 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
   const cellRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
-    cellRef!.current!.textContent =
-      result?.toString() || (value || '').toString();
-  }, [cellRef, value, result]);
+    if (cellRef.current !== null) {
+      cellRef.current.textContent =
+        result?.toString() || (value || '').toString();
+
+      placeCaretAtEnd(cellRef.current);
+    }
+  }, [value, result]);
 
   const isDraggingCellRange = useSpreadsheet(
     (state) => state.isDraggingCellRange
