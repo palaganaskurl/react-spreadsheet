@@ -8,9 +8,7 @@ const CellRangeSelectionOverlay = () => {
   );
   const commonStyles: React.CSSProperties = {
     position: 'absolute',
-    userSelect: 'none',
     pointerEvents: 'none',
-    zIndex: 20,
   };
   const borderColor = '#0b57d0';
 
