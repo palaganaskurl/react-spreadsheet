@@ -80,7 +80,7 @@ const FormulaCellSelectionOverlay = () => {
                 borderBottomWidth: selectionBorderWidth,
                 borderBottomColor: borderColor,
                 borderBottomStyle: 'dashed',
-                top: `${style.height - 4}px`,
+                top: `${style.height - 3}px`,
                 width: `${style.width}px`,
                 left: '0px',
                 ...commonStyles,
@@ -93,7 +93,7 @@ const FormulaCellSelectionOverlay = () => {
                 borderRightStyle: 'dashed',
                 top: '0px',
                 height: `${style.height}px`,
-                left: `${style.width - 4}px`,
+                left: `${style.width - 3}px`,
                 ...commonStyles,
               }}
             />

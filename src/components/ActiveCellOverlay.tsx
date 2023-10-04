@@ -70,7 +70,7 @@ const ActiveCellOverlay = () => {
         style={{
           borderBottomWidth: selectionBorderWidth,
           borderBottomStyle: 'solid',
-          top: `${style.height - 4}px`,
+          top: `${style.height - 3}px`,
           width: `${style.width}px`,
           left: '0px',
           ...commonStyles,
@@ -82,7 +82,7 @@ const ActiveCellOverlay = () => {
           borderRightStyle: 'solid',
           top: '0px',
           height: `${style.height}px`,
-          left: `${style.width - 4}px`,
+          left: `${style.width - 3}px`,
           ...commonStyles,
         }}
       />

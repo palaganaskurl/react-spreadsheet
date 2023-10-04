@@ -44,7 +44,7 @@ const CellRangeSelectionOverlay = () => {
           borderBottomWidth: selectionBorderWidth,
           borderBottomColor: borderColor,
           borderBottomStyle: 'solid',
-          top: `${cellRangeSelection.height - 4}px`,
+          top: `${cellRangeSelection.height - 3}px`,
           width: `${cellRangeSelection.width}px`,
           left: '0px',
           ...commonStyles,
@@ -57,7 +57,7 @@ const CellRangeSelectionOverlay = () => {
           borderRightStyle: 'solid',
           top: '0px',
           height: `${cellRangeSelection.height}px`,
-          left: `${cellRangeSelection.width - 4}px`,
+          left: `${cellRangeSelection.width - 3}px`,
           ...commonStyles,
         }}
       />
