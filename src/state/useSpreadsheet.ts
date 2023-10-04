@@ -233,8 +233,8 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
     set({
       cellRangeSelection: {
         width,
-        top: startBoundingClientRect?.y || 0,
-        left: startBoundingClientRect?.x || 0,
+        top: (startBoundingClientRect?.y || 0) + window.scrollY,
+        left: (startBoundingClientRect?.x || 0) + window.scrollX,
         height,
       },
     });

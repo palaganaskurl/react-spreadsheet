@@ -31,8 +31,8 @@ const FormulaCellSelectionOverlay = () => {
 
       styles.push({
         borderColor: selection.borderColor,
-        top: cellElementBoundingClientRect.top,
-        left: cellElementBoundingClientRect.left,
+        top: cellElementBoundingClientRect.top + window.scrollY,
+        left: cellElementBoundingClientRect.left + window.scrollX,
         width: cellElementBoundingClientRect.width,
         height: cellElementBoundingClientRect.height,
       });

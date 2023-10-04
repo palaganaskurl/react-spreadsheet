@@ -21,8 +21,8 @@ const ActiveCellOverlay = () => {
 
     return {
       borderColor: '#0b57d0',
-      top: cellElementBoundingClientRect.top,
-      left: cellElementBoundingClientRect.left,
+      top: cellElementBoundingClientRect.top + window.scrollY,
+      left: cellElementBoundingClientRect.left + window.scrollX,
       width: cellElementBoundingClientRect.width,
       height: cellElementBoundingClientRect.height,
     };
