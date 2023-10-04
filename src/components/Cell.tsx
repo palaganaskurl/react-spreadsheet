@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import { CellProps } from '../types';
 import { useSpreadsheet } from '../state/useSpreadsheet';
 import { placeCaretAtEnd } from '../lib/dom';
+import useFormulaEditor from '../lib/hooks/useFormulaEditor';
 
 const CellStyle = {
   display: 'flex',
@@ -62,6 +63,8 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
     setActiveCell(row, column);
   };
 
+  const { resolveFormula } = useFormulaEditor();
+
   return (
     <div
       id={id}
@@ -114,6 +117,7 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
             );
             setIsSelectingCellsForFormula(false);
             emptyFormulaCellSelectionPoints();
+            resolveFormula(e);
 
             break;
           }
