@@ -30,7 +30,7 @@ const ActiveCellOverlay = () => {
 
   const commonStyles: React.CSSProperties = {
     position: 'absolute',
-    userSelect: 'none',
+    pointerEvents: 'none',
   };
 
   const style = getOverlayStyles();
@@ -52,6 +52,7 @@ const ActiveCellOverlay = () => {
         width: `${style.width}px`,
         height: `${style.height}px`,
         position: 'absolute',
+        ...commonStyles,
       }}
       key={uuidv4()}
     >
