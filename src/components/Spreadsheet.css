@@ -58,18 +58,6 @@
   border-top: thin solid #e0e0e0 !important;
 }
 
-.Spreadsheet-Cell {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: left;
-  border-bottom: thin solid #e0e0e0;
-  border-right: thin solid #e0e0e0;
-  padding: 4px;
-  outline: 0px solid transparent;
-  text-wrap: nowrap;
-}
-
 .Spreadsheet-Active-Cell-No-Content {
   caret-color: transparent !important;
   cursor: default;

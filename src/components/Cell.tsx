@@ -4,6 +4,17 @@ import { CellProps } from '../types';
 import { useSpreadsheet } from '../state/useSpreadsheet';
 import { placeCaretAtEnd } from '../lib/dom';
 
+const CellStyle = {
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  borderBottom: 'thin solid #e0e0e0',
+  borderRight: 'thin solid #e0e0e0',
+  padding: '4px',
+  outline: '0px solid transparent',
+  textWrap: 'nowrap',
+};
+
 const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
   const setCellValue = useSpreadsheet((state) => state.setCellValue);
   const setActiveCell = useSpreadsheet((state) => state.setActiveCell);
@@ -122,13 +133,13 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
         }
       }}
       className={classNames({
-        'Spreadsheet-Cell': true,
         'Spreadsheet-Active-Cell-No-Content': !isEditing,
       })}
       style={{
         minWidth: `${width}px`,
         minHeight: `${height}px`,
         maxWidth: `${width}px`,
+        ...CellStyle,
       }}
       onBeforeInput={(e) => {
         if (writeMethod === 'overwrite') {
@@ -166,25 +177,12 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
           e.target instanceof HTMLDivElement &&
           e.buttons === 1
         ) {
+          // setCellRangeStart([row, column]);
+
           const targetRow = parseInt(e.target.dataset.row as string, 10);
           const targetColumn = parseInt(e.target.dataset.column as string, 10);
 
           setCellRangeEnd([targetRow, targetColumn]);
-        }
-      }}
-      onMouseUp={(e) => {
-        if (!isSelectingCellsForFormula) {
-          if (e.target instanceof HTMLDivElement) {
-            const targetRow = parseInt(e.target.dataset.row as string, 10);
-            const targetColumn = parseInt(
-              e.target.dataset.column as string,
-              10
-            );
-
-            setCellRangeEnd([targetRow, targetColumn]);
-          }
-        } else {
-          setCellRangeEnd(null);
         }
       }}
     />
