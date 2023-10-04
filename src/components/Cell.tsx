@@ -181,8 +181,6 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
           e.target instanceof HTMLDivElement &&
           e.buttons === 1
         ) {
-          // setCellRangeStart([row, column]);
-
           const targetRow = parseInt(e.target.dataset.row as string, 10);
           const targetColumn = parseInt(e.target.dataset.column as string, 10);
 
