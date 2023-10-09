@@ -158,6 +158,30 @@ const Cell = ({
 
             break;
           }
+          case 'ArrowDown': {
+            setEditing(false);
+            setActiveCell(row + 1, column);
+
+            break;
+          }
+          case 'ArrowUp': {
+            setEditing(false);
+            setActiveCell(row - 1, column);
+
+            break;
+          }
+          case 'ArrowLeft': {
+            setEditing(false);
+            setActiveCell(row, column - 1);
+
+            break;
+          }
+          case 'ArrowRight': {
+            setEditing(false);
+            setActiveCell(row, column + 1);
+
+            break;
+          }
           default:
             break;
         }

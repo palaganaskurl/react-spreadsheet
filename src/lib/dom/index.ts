@@ -9,3 +9,13 @@ export const placeCaretAtEnd = (el: HTMLElement) => {
 
   el.focus();
 };
+
+export const focusOnCell = (row: number, column: number) => {
+  const cell = document.querySelector(
+    `[data-row="${row}"][data-column="${column}"]`
+  );
+
+  if (cell instanceof HTMLDivElement) {
+    cell.focus();
+  }
+};

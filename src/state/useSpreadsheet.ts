@@ -11,6 +11,7 @@ import {
 import { generateRandomColor } from '../lib/color';
 import { getCellAddressLabel } from '../lib/spreadsheet';
 import { getEntityCountByType } from '../lib/formula';
+import { focusOnCell } from '../lib/dom';
 
 export type SpreadsheetState = {
   activeCell: [number, number];
@@ -113,6 +114,7 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
     set({
       activeCell: [row, column],
     });
+    focusOnCell(row, column);
   },
   setColumns: (columns: ColumnData[]) => {
     set({
