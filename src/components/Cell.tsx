@@ -16,8 +16,17 @@ const CellStyle = {
   textWrap: 'nowrap',
 };
 
-const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
-  const setCellValue = useSpreadsheet((state) => state.setCellValue);
+const Cell = ({
+  width,
+  height,
+  row,
+  column,
+  id,
+  value,
+  result,
+  formulaEntities,
+}: CellProps) => {
+  const setCellData = useSpreadsheet((state) => state.setCellData);
   const setActiveCell = useSpreadsheet((state) => state.setActiveCell);
   const [isEditing, setEditing] = React.useState<boolean>(false);
 
@@ -42,8 +51,8 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
   const isSelectingCellsForFormula = useSpreadsheet(
     (state) => state.isSelectingCellsForFormula
   );
-  const setFormulaCellSelectionPoint = useSpreadsheet(
-    (state) => state.setFormulaCellSelectionPoint
+  const setFormulaEntitiesFromCellSelection = useSpreadsheet(
+    (state) => state.setFormulaEntitiesFromCellSelection
   );
 
   const setIsSelectingCellsForFormula = useSpreadsheet(
@@ -52,10 +61,13 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
   const emptyFormulaCellSelectionPoints = useSpreadsheet(
     (state) => state.emptyFormulaCellSelectionPoints
   );
+  const setFormulaCellSelectionPoints = useSpreadsheet(
+    (state) => state.setFormulaCellSelectionPoints
+  );
 
   const setActiveCellConditionally = () => {
     if (isSelectingCellsForFormula) {
-      setFormulaCellSelectionPoint([row, column]);
+      setFormulaEntitiesFromCellSelection([row, column]);
 
       return;
     }
@@ -63,7 +75,7 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
     setActiveCell(row, column);
   };
 
-  const { resolveFormula } = useFormulaEditor();
+  const { resolveFormula, parseFormula } = useFormulaEditor();
 
   return (
     <div
@@ -90,6 +102,12 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
             break;
           }
           case 2: {
+            cellRef.current!.textContent = value;
+
+            setFormulaCellSelectionPoints(formulaEntities);
+            setCellData(row, column, {
+              value,
+            });
             setEditing(true);
             setActiveCellConditionally();
             setWriteMethod('append');
@@ -109,15 +127,21 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
         switch (e.key) {
           case 'Enter': {
             setEditing(false);
-            setActiveCell(row + 1, column);
-            setCellValue(
-              row,
-              column,
-              e.currentTarget.textContent?.trim() as string
-            );
+
             setIsSelectingCellsForFormula(false);
+
+            const { evaluatedFormula, formulaResult } = resolveFormula(value);
+
+            if (evaluatedFormula && formulaResult) {
+              // Since the Cell is memoized, it doesn't re-render
+              //  when the formulaResult is the same.
+              // Temporarily, we set the cellRef textContent
+              //  manually.
+              cellRef.current!.textContent = formulaResult;
+            }
+
             emptyFormulaCellSelectionPoints();
-            resolveFormula(e);
+            setActiveCell(row + 1, column);
 
             break;
           }
@@ -128,7 +152,9 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
 
             // TODO: Might cause issue, check if editing or selecting cells
             //  before setting the value to empty
-            setCellValue(row, column, '');
+            setCellData(row, column, {
+              value: '',
+            });
 
             break;
           }
@@ -156,13 +182,16 @@ const Cell = ({ width, height, row, column, id, value, result }: CellProps) => {
         if (cellContent.startsWith('=')) {
           setIsSelectingCellsForFormula(true);
           setActiveCell(row, column);
+          parseFormula(e);
         }
 
         if (writeMethod === 'overwrite') {
           setWriteMethod('append');
         }
 
-        setCellValue(row, column, cellContent);
+        setCellData(row, column, {
+          value: cellContent,
+        });
       }}
       onMouseDown={() => {
         setCellRangeEnd(null);

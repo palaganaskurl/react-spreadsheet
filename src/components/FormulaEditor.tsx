@@ -10,7 +10,7 @@ const FormulaEditor = () => {
     (state) => state.activeCell
   );
   const setCellValue = useSpreadsheet((state) => state.setCellValue);
-  const getCellValue = useSpreadsheet((state) => state.getCellValue);
+  const getCell = useSpreadsheet((state) => state.getCell);
 
   const setIsSelectingCellsForFormula = useSpreadsheet(
     (state) => state.setIsSelectingCellsForFormula
@@ -23,12 +23,25 @@ const FormulaEditor = () => {
     setCellValue(activeCellRow, activeCellColumn, formula);
   };
 
-  const activeCellValue = getCellValue(activeCellRow, activeCellColumn);
+  const activeCellValue = getCell(activeCellRow, activeCellColumn);
 
   const formulaRef = React.useRef<HTMLDivElement | null>(null);
 
+  // TODO: Try to format formula entities with color
+  // const renderFormulaEntities = () => {
+  //   if (activeCellValue?.formulaEntities.size === 0) {
+  //     return null;
+  //   }
+
+  //   return Array.from(activeCellValue?.formulaEntities || []).map((x) => (
+  //     <>
+  //       <span key={uuidv4()}>{x.address}</span>
+  //     </>
+  //   ));
+  // };
+
   React.useEffect(() => {
-    formulaRef!.current!.textContent = activeCellValue;
+    formulaRef!.current!.textContent = activeCellValue?.value || '';
   }, [activeCellValue]);
 
   return (
@@ -50,6 +63,7 @@ const FormulaEditor = () => {
         />
       </div>
       <div
+        suppressContentEditableWarning
         contentEditable
         className={classNames({
           'Spreadsheet-Formula-Editor': true,
@@ -57,14 +71,24 @@ const FormulaEditor = () => {
         onInput={onFormulaInput}
         ref={formulaRef}
         onKeyUp={(e) => {
-          if (e.key === 'Enter') {
-            resolveFormula(e);
+          switch (e.key) {
+            case 'Enter': {
+              if (activeCellValue?.value) {
+                resolveFormula(activeCellValue.value);
+              }
+
+              break;
+            }
+            default:
+              break;
           }
         }}
         tabIndex={0}
         aria-label="Formula Editor"
         role="textbox"
-      />
+      >
+        {/* {renderFormulaEntities()} */}
+      </div>
     </div>
   );
 };

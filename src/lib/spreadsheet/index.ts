@@ -29,8 +29,8 @@ const chars = [
 
 export const numberToExcelHeader = (index: number): string => {
   const currentIndex = index - 1;
-
   const quotient = Math.floor(currentIndex / 26);
+
   if (quotient > 0) {
     return numberToExcelHeader(quotient) + chars[currentIndex % 26];
   }
@@ -50,3 +50,26 @@ export const numberToExcelHeaderArray = (columnCount: number): string[] => {
 
 export const getCellAddressLabel = (row: number, column: number): string =>
   `${numberToExcelHeader(column + 1)}${row + 1}`;
+
+export const cellAddressToIndex = (cellAddress: string) => {
+  const columnLettersMatch = cellAddress.match(/[A-Z]+/);
+
+  if (columnLettersMatch === null) {
+    return null;
+  }
+
+  const columnLetters = columnLettersMatch[0];
+  const rowNumber = parseInt(cellAddress.match(/[0-9]+/)![0], 10);
+
+  let columnIndex = 0;
+
+  for (let i = 0; i < columnLetters.length; i++) {
+    const charCode = columnLetters.charCodeAt(i) - 65; // 'A' has char code 65
+    columnIndex = columnIndex * 26 + charCode + 1;
+  }
+
+  return {
+    row: rowNumber - 1,
+    column: columnIndex - 1,
+  };
+};

@@ -9,7 +9,7 @@ const FormulaCellSelectionOverlay = () => {
     (state) => state.formulaCellSelections
   );
 
-  if (formulaCellSelections.size === 0) {
+  if (formulaCellSelections.length === 0) {
     return null;
   }
 

@@ -1,23 +1,16 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
-import { CellData, ColumnData, FormulaEntity } from '../types';
+import {
+  CellData,
+  CellSelection,
+  ColumnData,
+  FormulaCellSelection,
+  FormulaEntity,
+  Point,
+} from '../types';
 import { generateRandomColor } from '../lib/color';
 import { getCellAddressLabel } from '../lib/spreadsheet';
-import { getOperationCount } from '../lib/formula';
-
-export type Point = [number, number];
-
-export interface CellSelection {
-  height: number;
-  left: number;
-  top: number;
-  width: number;
-}
-
-export interface FormulaCellSelection {
-  borderColor: string;
-  point: Point;
-}
+import { getEntityCountByType } from '../lib/formula';
 
 export type SpreadsheetState = {
   activeCell: [number, number];
@@ -27,25 +20,30 @@ export type SpreadsheetState = {
   columns: ColumnData[];
   data: Array<CellData[]>;
   emptyFormulaCellSelectionPoints: () => void;
-  formulaCellSelections: Set<FormulaCellSelection>;
-  getCellValue: (row: number, column: number) => CellData['value'];
+  formulaCellSelections: FormulaCellSelection[];
+  getCell: (row: number, column: number) => CellData | null;
   getMatrixValues: () => Array<CellData['value'][]>;
   insertNewColumnAt: (column: number, where: 'before' | 'after') => void;
   insertNewRowAt: (row: number, where: 'before' | 'after') => void;
   isSelectingCellsForFormula: boolean;
   setActiveCell: (row: number, column: number) => void;
-  setCellRangeEnd: (cellRange: Point | null) => void;
-  setCellRangeStart: (cellRange: Point) => void;
-  setCellResult: (
+  setCellData: (
     row: number,
     column: number,
-    result: CellData['result']
+    updateData: Partial<CellData>
   ) => void;
+  setCellRangeEnd: (cellRange: Point | null) => void;
+  setCellRangeStart: (cellRange: Point) => void;
   setCellValue: (row: number, column: number, value: CellData['value']) => void;
   setColumnWidth: (column: number, width: number) => void;
   setColumns: (columns: ColumnData[]) => void;
   setData: (data: Array<CellData[]>) => void;
-  setFormulaCellSelectionPoint: (formulaCellSelectionPoint: Point) => void;
+  setFormulaCellSelectionPoints: (
+    formulaEntities: CellData['formulaEntities']
+  ) => void;
+  setFormulaEntitiesFromCellSelection: (
+    formulaCellSelectionPoint: Point
+  ) => void;
   setIsSelectingCellsForFormula: (isSelectingCellsForFormula: boolean) => void;
 };
 
@@ -69,14 +67,14 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
   setData: (data: Array<CellData[]>) => {
     set({ data });
   },
-  getCellValue: (row: number, column: number) => {
+  getCell: (row: number, column: number) => {
     const { data } = get();
 
     if (data[row] && data[row][column]) {
-      return data[row][column]?.value;
+      return data[row][column];
     }
 
-    return '';
+    return null;
   },
   setCellValue: (row: number, column: number, value: CellData['value']) => {
     const { data } = get();
@@ -84,15 +82,6 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
     if (value !== undefined) {
       data[row][column].value = value;
     }
-
-    set({
-      data: [...data],
-    });
-  },
-  setCellResult: (row: number, column: number, result: CellData['result']) => {
-    const { data } = get();
-
-    data[row][column].result = result;
 
     set({
       data: [...data],
@@ -252,66 +241,61 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
   setIsSelectingCellsForFormula: (isSelectingCellsForFormula: boolean) => {
     set({ isSelectingCellsForFormula });
   },
-  formulaCellSelections: new Set(),
+  formulaCellSelections: [],
   emptyFormulaCellSelectionPoints: () => {
     set({
-      formulaCellSelections: new Set(),
+      formulaCellSelections: [],
     });
   },
-  setFormulaCellSelectionPoint: (formulaCellSelectionPoint: Point) => {
+  setFormulaEntitiesFromCellSelection: (formulaCellSelectionPoint: Point) => {
     const { formulaCellSelections, activeCell, data } = get();
     const [activeRow, activeColumn] = activeCell;
 
-    const operationCount = getOperationCount(
-      data[activeRow][activeColumn].value
+    const { operationCount, variableCount } = getEntityCountByType(
+      data[activeRow][activeColumn].formulaEntities
     );
 
-    if (data[activeRow][activeColumn].formulaEntities.size === 0) {
+    const borderColor = generateRandomColor();
+
+    if (variableCount === 0) {
       const [row, column] = formulaCellSelectionPoint;
       const cellAddress = getCellAddressLabel(row, column);
+
       const formulaEntity: FormulaEntity = {
         row,
         column,
         address: cellAddress,
+        type: 'variable',
+        borderColor,
       };
 
       data[activeRow][activeColumn].value = `=${cellAddress}`;
       data[activeRow][activeColumn].formulaEntities.add(formulaEntity);
 
-      let inFormulaCellSelections = formulaCellSelections;
-
-      if (!formulaCellSelections) {
-        inFormulaCellSelections = new Set([
-          {
-            point: formulaCellSelectionPoint,
-            borderColor: generateRandomColor(),
-          },
-        ]);
-      } else {
-        inFormulaCellSelections.add({
+      const inFormulaCellSelections: FormulaCellSelection[] = [
+        {
           point: formulaCellSelectionPoint,
-          borderColor: generateRandomColor(),
-        });
-      }
+          borderColor,
+        },
+      ];
 
       set({
-        formulaCellSelections: new Set(inFormulaCellSelections),
+        formulaCellSelections: Array.from(inFormulaCellSelections),
         data: [...data],
       });
 
       return;
     }
 
-    if (
-      operationCount ===
-      data[activeRow][activeColumn].formulaEntities.size - 1
-    ) {
+    if (operationCount === variableCount - 1) {
       const [row, column] = formulaCellSelectionPoint;
       const cellAddress = getCellAddressLabel(row, column);
       const formulaEntity: FormulaEntity = {
         row,
         column,
         address: cellAddress,
+        type: 'variable',
+        borderColor,
       };
 
       const arrayFromFormulaEntities = Array.from(
@@ -325,13 +309,9 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
         activeColumn
       ].value.replace(poppedEntity?.address || '', '');
 
-      const newFormulaCellSelectionsSet = new Set(
-        arrayFromFormulaCellSelections
-      );
-
-      newFormulaCellSelectionsSet.add({
+      arrayFromFormulaCellSelections.push({
         point: formulaCellSelectionPoint,
-        borderColor: generateRandomColor(),
+        borderColor,
       });
       data[activeRow][activeColumn].formulaEntities = new Set(
         arrayFromFormulaEntities
@@ -340,7 +320,7 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
       data[activeRow][activeColumn].value += cellAddress;
 
       set({
-        formulaCellSelections: newFormulaCellSelectionsSet,
+        formulaCellSelections: Array.from(arrayFromFormulaCellSelections),
         data: [...data],
       });
     } else {
@@ -350,20 +330,54 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
         row,
         column,
         address: cellAddress,
+        type: 'variable',
+        borderColor,
       };
 
       data[activeRow][activeColumn].value += cellAddress;
       data[activeRow][activeColumn].formulaEntities.add(formulaEntity);
-      formulaCellSelections.add({
+      formulaCellSelections.push({
         point: formulaCellSelectionPoint,
-        borderColor: generateRandomColor(),
+        borderColor,
       });
 
       set({
-        formulaCellSelections: new Set(formulaCellSelections),
+        formulaCellSelections: Array.from(formulaCellSelections),
         data: [...data],
       });
     }
+  },
+  setCellData: (row: number, column: number, updateData: Partial<CellData>) => {
+    const { data } = get();
+
+    data[row][column] = {
+      ...data[row][column],
+      ...updateData,
+    };
+
+    set({ data: [...data] });
+  },
+  setFormulaCellSelectionPoints: (
+    formulaEntities: CellData['formulaEntities']
+  ) => {
+    const formulaCellSelections = new Set<FormulaCellSelection>();
+
+    formulaEntities.forEach((entity) => {
+      if (
+        entity.borderColor !== undefined &&
+        entity.row !== undefined &&
+        entity.column !== undefined
+      ) {
+        formulaCellSelections.add({
+          borderColor: entity.borderColor,
+          point: [entity.row, entity.column],
+        });
+      }
+    });
+
+    set({
+      formulaCellSelections: Array.from(formulaCellSelections),
+    });
   },
 }));
 

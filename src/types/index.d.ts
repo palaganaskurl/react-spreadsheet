@@ -7,9 +7,12 @@ export type ColumnData = {
 };
 
 export type FormulaEntity = {
-  address: string;
-  column: number;
-  row: number;
+  address?: string;
+  borderColor?: string;
+  column?: number;
+  operation?: string;
+  row?: number;
+  type: 'variable' | 'operation';
 };
 
 export type CellData = {
@@ -50,4 +53,18 @@ export interface SelectionOverlayStyle {
   left: number;
   top: number;
   width: number;
+}
+
+export type Point = [number, number];
+
+export interface CellSelection {
+  height: number;
+  left: number;
+  top: number;
+  width: number;
+}
+
+export interface FormulaCellSelection {
+  borderColor: string;
+  point: Point;
 }
