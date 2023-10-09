@@ -9,18 +9,23 @@ const FormulaEditor = () => {
   const [activeCellRow, activeCellColumn] = useSpreadsheet(
     (state) => state.activeCell
   );
-  const setCellValue = useSpreadsheet((state) => state.setCellValue);
+  const setCellData = useSpreadsheet((state) => state.setCellData);
   const getCell = useSpreadsheet((state) => state.getCell);
-
   const setIsSelectingCellsForFormula = useSpreadsheet(
     (state) => state.setIsSelectingCellsForFormula
+  );
+  const setIsEditingAtFormulaEditor = useSpreadsheet(
+    (state) => state.setIsEditingAtFormulaEditor
   );
 
   const onFormulaInput = (e: React.FormEvent<HTMLDivElement>) => {
     const formula = e.currentTarget.textContent?.trim() || '';
 
     setIsSelectingCellsForFormula(formula.startsWith('='));
-    setCellValue(activeCellRow, activeCellColumn, formula);
+    setCellData(activeCellRow, activeCellColumn, {
+      value: formula,
+    });
+    formulaRef.current!.focus();
   };
 
   const activeCellValue = getCell(activeCellRow, activeCellColumn);
@@ -63,6 +68,12 @@ const FormulaEditor = () => {
         />
       </div>
       <div
+        onFocus={() => {
+          setIsEditingAtFormulaEditor(true);
+        }}
+        onBlur={() => {
+          setIsEditingAtFormulaEditor(false);
+        }}
         suppressContentEditableWarning
         contentEditable
         className={classNames({

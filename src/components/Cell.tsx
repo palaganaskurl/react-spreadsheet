@@ -28,6 +28,9 @@ const Cell = ({
 }: CellProps) => {
   const setCellData = useSpreadsheet((state) => state.setCellData);
   const setActiveCell = useSpreadsheet((state) => state.setActiveCell);
+  const isEditingAtFormulaEditor = useSpreadsheet(
+    (state) => state.isEditingAtFormulaEditor
+  );
   const [isEditing, setEditing] = React.useState<boolean>(false);
 
   const cellRef = React.useRef<HTMLDivElement>(null);
@@ -37,7 +40,9 @@ const Cell = ({
       cellRef.current.textContent =
         result?.toString() || (value || '').toString();
 
-      placeCaretAtEnd(cellRef.current);
+      if (!isEditingAtFormulaEditor) {
+        placeCaretAtEnd(cellRef.current);
+      }
     }
   }, [value, result]);
 

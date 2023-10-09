@@ -26,6 +26,7 @@ export type SpreadsheetState = {
   getMatrixValues: () => Array<CellData['value'][]>;
   insertNewColumnAt: (column: number, where: 'before' | 'after') => void;
   insertNewRowAt: (row: number, where: 'before' | 'after') => void;
+  isEditingAtFormulaEditor: boolean;
   isSelectingCellsForFormula: boolean;
   setActiveCell: (row: number, column: number) => void;
   setCellData: (
@@ -35,7 +36,6 @@ export type SpreadsheetState = {
   ) => void;
   setCellRangeEnd: (cellRange: Point | null) => void;
   setCellRangeStart: (cellRange: Point) => void;
-  setCellValue: (row: number, column: number, value: CellData['value']) => void;
   setColumnWidth: (column: number, width: number) => void;
   setColumns: (columns: ColumnData[]) => void;
   setData: (data: Array<CellData[]>) => void;
@@ -45,6 +45,7 @@ export type SpreadsheetState = {
   setFormulaEntitiesFromCellSelection: (
     formulaCellSelectionPoint: Point
   ) => void;
+  setIsEditingAtFormulaEditor: (isEditingAtFormulaEditor: boolean) => void;
   setIsSelectingCellsForFormula: (isSelectingCellsForFormula: boolean) => void;
 };
 
@@ -76,17 +77,6 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
     }
 
     return null;
-  },
-  setCellValue: (row: number, column: number, value: CellData['value']) => {
-    const { data } = get();
-
-    if (value !== undefined) {
-      data[row][column].value = value;
-    }
-
-    set({
-      data: [...data],
-    });
   },
   setColumnWidth: (column: number, width: number) => {
     const { data } = get();
@@ -379,6 +369,12 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
 
     set({
       formulaCellSelections: Array.from(formulaCellSelections),
+    });
+  },
+  isEditingAtFormulaEditor: false,
+  setIsEditingAtFormulaEditor: (isEditingAtFormulaEditor: boolean) => {
+    set({
+      isEditingAtFormulaEditor,
     });
   },
 }));
