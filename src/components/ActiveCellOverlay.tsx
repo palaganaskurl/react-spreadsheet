@@ -41,8 +41,6 @@ const ActiveCellOverlay = () => {
     return null;
   }
 
-  // TODO: Fix some values here used in subtractions to
-  //  have more context in future changes.
   return (
     <div
       id="activeCell"
@@ -70,7 +68,7 @@ const ActiveCellOverlay = () => {
         style={{
           borderBottomWidth: selectionBorderWidth,
           borderBottomStyle: 'solid',
-          top: `${style.height - 3}px`,
+          top: `${style.height - selectionBorderWidth}px`,
           width: `${style.width}px`,
           left: '0px',
           ...commonStyles,
@@ -82,7 +80,7 @@ const ActiveCellOverlay = () => {
           borderRightStyle: 'solid',
           top: '0px',
           height: `${style.height}px`,
-          left: `${style.width - 3}px`,
+          left: `${style.width - selectionBorderWidth}px`,
           ...commonStyles,
         }}
       />

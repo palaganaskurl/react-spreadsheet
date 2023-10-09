@@ -46,8 +46,6 @@ const FormulaCellSelectionOverlay = () => {
     userSelect: 'none',
   };
 
-  // TODO: Fix some values here used in subtractions to
-  //  have more context in future changes.
   return (
     <div id="formulaSelectionOverlay">
       {getOverlayStyles().map((style) => {
@@ -80,7 +78,7 @@ const FormulaCellSelectionOverlay = () => {
                 borderBottomWidth: selectionBorderWidth,
                 borderBottomColor: borderColor,
                 borderBottomStyle: 'dashed',
-                top: `${style.height - 3}px`,
+                top: `${style.height - selectionBorderWidth}px`,
                 width: `${style.width}px`,
                 left: '0px',
                 ...commonStyles,
@@ -93,7 +91,7 @@ const FormulaCellSelectionOverlay = () => {
                 borderRightStyle: 'dashed',
                 top: '0px',
                 height: `${style.height}px`,
-                left: `${style.width - 3}px`,
+                left: `${style.width - selectionBorderWidth}px`,
                 ...commonStyles,
               }}
             />
