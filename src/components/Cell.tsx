@@ -128,6 +128,42 @@ const Cell = ({
           }
         }
       }}
+      onKeyDown={(e) => {
+        if (e.defaultPrevented) {
+          return; // Do nothing if the event was already processed
+        }
+
+        switch (e.key) {
+          case 'ArrowDown': {
+            setEditing(false);
+            setActiveCell(row + 1, column);
+
+            break;
+          }
+          case 'ArrowUp': {
+            setEditing(false);
+            setActiveCell(row - 1, column);
+
+            break;
+          }
+          case 'ArrowLeft': {
+            setEditing(false);
+            setActiveCell(row, column - 1);
+
+            break;
+          }
+          case 'ArrowRight': {
+            setEditing(false);
+            setActiveCell(row, column + 1);
+
+            break;
+          }
+          default:
+            break;
+        }
+
+        e.preventDefault();
+      }}
       onKeyUp={(e) => {
         switch (e.key) {
           case 'Enter': {
@@ -160,30 +196,6 @@ const Cell = ({
             setCellData(row, column, {
               value: '',
             });
-
-            break;
-          }
-          case 'ArrowDown': {
-            setEditing(false);
-            setActiveCell(row + 1, column);
-
-            break;
-          }
-          case 'ArrowUp': {
-            setEditing(false);
-            setActiveCell(row - 1, column);
-
-            break;
-          }
-          case 'ArrowLeft': {
-            setEditing(false);
-            setActiveCell(row, column - 1);
-
-            break;
-          }
-          case 'ArrowRight': {
-            setEditing(false);
-            setActiveCell(row, column + 1);
 
             break;
           }
