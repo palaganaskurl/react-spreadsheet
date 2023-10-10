@@ -46,16 +46,32 @@ export function Spreadsheet() {
   const [activeCellRow, activeCellColumn] = useSpreadsheet(
     (state) => state.activeCell
   );
+  const cellRangeStart = useSpreadsheet((state) => state.cellRangeStart);
+  const cellRangeEnd = useSpreadsheet((state) => state.cellRangeEnd);
 
   React.useEffect(() => {
     setData(initialRowData);
   }, []);
 
+  const renderCellAddressLabel = () => {
+    if (cellRangeStart !== null && cellRangeEnd !== null) {
+      const [rowRangeStart, columnRangeStart] = cellRangeStart;
+      const [rowRangeEnd, columnRangeEnd] = cellRangeEnd;
+
+      return `${getCellAddressLabel(
+        rowRangeStart,
+        columnRangeStart
+      )}:${getCellAddressLabel(rowRangeEnd, columnRangeEnd)}`;
+    }
+
+    return getCellAddressLabel(activeCellRow, activeCellColumn);
+  };
+
   return (
     <div className="Spreadsheet">
       <div className="Spreadsheet-Formula-Bar">
         <div className="Spreadsheet-Formula-Bar-Active-Cell">
-          {getCellAddressLabel(activeCellRow, activeCellColumn)}
+          {renderCellAddressLabel()}
         </div>
         <FormulaEditor />
       </div>

@@ -34,8 +34,8 @@ export type SpreadsheetState = {
     column: number,
     updateData: Partial<CellData>
   ) => void;
-  setCellRangeEnd: (cellRange: Point | null) => void;
-  setCellRangeStart: (cellRange: Point) => void;
+  setCellRangeEnd: (point: Point | null) => void;
+  setCellRangeStart: (point: Point | null) => void;
   setColumnWidth: (column: number, width: number) => void;
   setColumns: (columns: ColumnData[]) => void;
   setData: (data: Array<CellData[]>) => void;
@@ -218,6 +218,7 @@ const useSpreadsheet = create<SpreadsheetState>((set, get) => ({
         left: (startBoundingClientRect?.x || 0) + window.scrollX,
         height,
       },
+      cellRangeEnd: point,
     });
   },
   getMatrixValues: () => {
