@@ -137,32 +137,30 @@ const Cell = ({
           case 'ArrowDown': {
             setEditing(false);
             setActiveCell(row + 1, column);
-
+            e.preventDefault();
             break;
           }
           case 'ArrowUp': {
             setEditing(false);
             setActiveCell(row - 1, column);
-
+            e.preventDefault();
             break;
           }
           case 'ArrowLeft': {
             setEditing(false);
             setActiveCell(row, column - 1);
-
+            e.preventDefault();
             break;
           }
           case 'ArrowRight': {
             setEditing(false);
             setActiveCell(row, column + 1);
-
+            e.preventDefault();
             break;
           }
           default:
             break;
         }
-
-        e.preventDefault();
       }}
       onKeyUp={(e) => {
         switch (e.key) {
