@@ -38,7 +38,7 @@ export const parseFormula = (s: string) => {
   return tokens;
 };
 
-export const getEntityCountByType = (entities: Set<FormulaEntity>) => {
+export const getEntityCountByType = (entities: FormulaEntity[]) => {
   let operationCount = 0;
   let variableCount = 0;
 

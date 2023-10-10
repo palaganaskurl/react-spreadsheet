@@ -16,13 +16,13 @@ const useFormulaEditor = () => {
 
   const parseFormula = (e: React.FormEvent<HTMLDivElement>) => {
     const parsedFormula = parseFormulaHelper(e.currentTarget.textContent ?? '');
-    const entities = new Set<FormulaEntity>();
+    const entities: FormulaEntity[] = [];
 
     parsedFormula.forEach((entity) => {
       const cellAddressRowCol = cellAddressToIndex(entity.value);
 
       if (cellAddressRowCol === null) {
-        entities.add({
+        entities.push({
           operation: entity.value,
           type: 'operation',
         });
@@ -30,7 +30,7 @@ const useFormulaEditor = () => {
         const { row, column } = cellAddressRowCol;
         const cellAddress = getCellAddressLabel(row, column);
 
-        entities.add({
+        entities.push({
           row,
           column,
           address: cellAddress,

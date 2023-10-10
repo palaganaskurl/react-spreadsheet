@@ -1,7 +1,5 @@
 import React from 'react';
 import './Spreadsheet.css';
-import { v4 as uuidv4 } from 'uuid';
-import { CellData } from '../types';
 import 'react-resizable/css/styles.css';
 import Cell from './Cell';
 import { useSpreadsheet } from '../state/useSpreadsheet';
@@ -16,30 +14,7 @@ import FormulaCellSelectionOverlay from './FormulaCellSelectionOverlay';
 import ActiveCellOverlay from './ActiveCellOverlay';
 
 export function Spreadsheet() {
-  const DEFAULT_COLUMN_WIDTH = 50;
-  const DEFAULT_ROW_HEIGHT = 30;
-
-  const ROW_COUNT = 20;
-  const COLUMN_COUNT = 20;
-
-  const initialRowData: Array<CellData[]> = [];
-
-  for (let i = 0; i < ROW_COUNT; i++) {
-    initialRowData.push([]);
-
-    for (let j = 0; j < COLUMN_COUNT; j++) {
-      initialRowData[i].push({
-        width: DEFAULT_COLUMN_WIDTH,
-        height: DEFAULT_ROW_HEIGHT,
-        id: uuidv4(),
-        value: '',
-        formulaEntities: new Set(),
-      });
-    }
-  }
-
   const rowData = useSpreadsheet((state) => state.data);
-  const setData = useSpreadsheet((state) => state.setData);
 
   const columns = useSpreadsheet((state) => state.columns);
 
@@ -50,7 +25,11 @@ export function Spreadsheet() {
   const cellRangeEnd = useSpreadsheet((state) => state.cellRangeEnd);
 
   React.useEffect(() => {
-    setData(initialRowData);
+    const rehydrate = async () => {
+      await useSpreadsheet.persist.rehydrate();
+    };
+
+    rehydrate();
   }, []);
 
   const renderCellAddressLabel = () => {

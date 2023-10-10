@@ -16,7 +16,7 @@ export type FormulaEntity = {
 };
 
 export type CellData = {
-  formulaEntities: Set<FormulaEntity>;
+  formulaEntities: FormulaEntity[];
   height: number;
   id: string;
   result?: number;
