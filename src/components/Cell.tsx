@@ -37,8 +37,12 @@ const Cell = ({
 
   React.useEffect(() => {
     if (cellRef.current !== null) {
-      cellRef.current.textContent =
-        result?.toString() || (value || '').toString();
+      if (isSelectingCellsForFormula) {
+        cellRef.current.textContent = (value || '').toString();
+      } else {
+        cellRef.current.textContent =
+          result?.toString() || (value || '').toString();
+      }
 
       if (!isEditingAtFormulaEditor) {
         placeCaretAtEnd(cellRef.current);
@@ -108,6 +112,12 @@ const Cell = ({
           }
           case 2: {
             cellRef.current!.textContent = value;
+
+            if (value.startsWith('=')) {
+              setIsSelectingCellsForFormula(true);
+              setActiveCell(row, column);
+              parseFormula(e);
+            }
 
             setFormulaCellSelectionPoints(formulaEntities);
             setCellData(row, column, {
@@ -189,10 +199,12 @@ const Cell = ({
             setIsSelectingCellsForFormula(false);
             emptyFormulaCellSelectionPoints();
 
-            // TODO: Might cause issue, check if editing or selecting cells
-            //  before setting the value to empty
+            // TODO: Ideally, this should be set to the value
+            //  before Enter or Blurred.
+            // Maybe need to check on saving the value while
+            //  user is inputting
             setCellData(row, column, {
-              value: '',
+              value,
             });
 
             break;

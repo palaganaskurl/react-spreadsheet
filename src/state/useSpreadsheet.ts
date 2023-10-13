@@ -20,7 +20,7 @@ export interface SpreadsheetState {
   cellRangeSelection: CellSelection | null;
   cellRangeStart: Point | null;
   columns: ColumnData[];
-  data: Array<CellData[]>;
+  data: CellData[][];
   emptyFormulaCellSelectionPoints: () => void;
   formulaCellSelections: FormulaCellSelection[];
   getCell: (row: number, column: number) => CellData | null;
@@ -39,7 +39,7 @@ export interface SpreadsheetState {
   setCellRangeStart: (point: Point | null) => void;
   setColumnWidth: (column: number, width: number) => void;
   setColumns: (columns: ColumnData[]) => void;
-  setData: (data: Array<CellData[]>) => void;
+  setData: (data: CellData[][]) => void;
   setFormulaCellSelectionPoints: (
     formulaEntities: CellData['formulaEntities']
   ) => void;
@@ -90,7 +90,7 @@ const useSpreadsheet = create<SpreadsheetState>()(
       cellRangeEnd: null,
       cellRangeStart: null,
       cellRangeSelection: null,
-      setData: (data: Array<CellData[]>) => {
+      setData: (data: CellData[][]) => {
         set({ data });
       },
       getCell: (row: number, column: number) => {
@@ -380,6 +380,11 @@ const useSpreadsheet = create<SpreadsheetState>()(
           ...updateData,
         };
 
+        if (data[row][column].value.trim() === '') {
+          data[row][column].formulaEntities = [];
+          data[row][column].result = undefined;
+        }
+
         set({ data: [...data] });
       },
       setFormulaCellSelectionPoints: (
@@ -412,8 +417,22 @@ const useSpreadsheet = create<SpreadsheetState>()(
       },
     }),
     {
-      name: 'react-spreadsheet-storage', // name of item in the storage (must be unique)
-      storage: createJSONStorage(() => sessionStorage), // (optional) by default the 'localStorage' is used
+      name: 'react-spreadsheet-storage',
+      storage: createJSONStorage(() => sessionStorage),
+      partialize: (state) =>
+        Object.fromEntries(
+          Object.entries(state).filter(
+            ([key]) =>
+              ![
+                'isSelectingCellsForFormula',
+                'isEditingAtFormulaEditor',
+                'cellRangeEnd',
+                'cellRangeSelection',
+                'cellRangeStart',
+                'formulaCellSelections',
+              ].includes(key)
+          )
+        ),
     }
   )
 );

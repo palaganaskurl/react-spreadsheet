@@ -15,9 +15,7 @@ import ActiveCellOverlay from './ActiveCellOverlay';
 
 export function Spreadsheet() {
   const rowData = useSpreadsheet((state) => state.data);
-
   const columns = useSpreadsheet((state) => state.columns);
-
   const [activeCellRow, activeCellColumn] = useSpreadsheet(
     (state) => state.activeCell
   );
