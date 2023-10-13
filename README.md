@@ -9,7 +9,6 @@
 ## TODO
 
 - [ ] Cell range formula handling.
-- [ ] When the formula editor has "=" on start, add functionality to select cells
 - [ ] Current selection not adjusting when resizing column / and row possibly.
 - [ ] Functionalities in Row and Column Context Menu
 - [ ] Sheets
