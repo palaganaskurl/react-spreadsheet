@@ -13,6 +13,47 @@ import FormulaEditor from './FormulaEditor';
 import FormulaCellSelectionOverlay from './FormulaCellSelectionOverlay';
 import ActiveCellOverlay from './ActiveCellOverlay';
 
+const ColumnHeadersStyle: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'row',
+};
+const RowsStyle: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+};
+const ColumnLabelStyle: React.CSSProperties = {
+  minWidth: '50px',
+  minHeight: '30px',
+  backgroundColor: '#f5f5f5',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  borderRight: 'thin solid #e0e0e0',
+  borderLeft: 'thin solid #e0e0e0',
+  borderBottom: 'thin solid #e0e0e0',
+  userSelect: 'none',
+  MozUserSelect: 'none',
+  KhtmlUserSelect: 'none',
+  WebkitUserSelect: 'none',
+};
+const ColumnFirstLabelStyle: React.CSSProperties = {
+  borderTop: 'thin solid #e0e0e0',
+};
+const FormulaBarStyle: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'row',
+  padding: '6px',
+};
+const FormulaBarActiveCellStyle: React.CSSProperties = {
+  width: '10%',
+  borderRight: '2px solid gray',
+  paddingTop: '2px',
+  paddingBottom: '2px',
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+};
+
 export function Spreadsheet() {
   const rowData = useSpreadsheet((state) => state.data);
   const columns = useSpreadsheet((state) => state.columns);
@@ -46,14 +87,12 @@ export function Spreadsheet() {
 
   return (
     <div className="Spreadsheet">
-      <div className="Spreadsheet-Formula-Bar">
-        <div className="Spreadsheet-Formula-Bar-Active-Cell">
-          {renderCellAddressLabel()}
-        </div>
+      <div style={FormulaBarStyle}>
+        <div style={FormulaBarActiveCellStyle}>{renderCellAddressLabel()}</div>
         <FormulaEditor />
       </div>
-      <div className="Spreadsheet-Column-Headers">
-        <div className="Spreadsheet-Row-Number Spreadsheet-Row-Number-First" />
+      <div style={ColumnHeadersStyle}>
+        <div style={{ ...ColumnLabelStyle, ...ColumnFirstLabelStyle }} />
         {columns.map((columnData, columnIndex) => (
           <Column
             columnData={columnData}
@@ -62,7 +101,7 @@ export function Spreadsheet() {
           />
         ))}
       </div>
-      <div className="Spreadsheet-Rows">
+      <div style={RowsStyle}>
         {rowData.map((row, rowIndex) => (
           <Row key={`row${rowIndex + 1}`} index={rowIndex}>
             {row.map((cell, cellIndex) => (

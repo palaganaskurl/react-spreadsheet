@@ -1,11 +1,10 @@
 import React from 'react';
-import classNames from 'classnames';
 import { CellProps } from '../types';
 import { useSpreadsheet } from '../state/useSpreadsheet';
 import { placeCaretAtEnd } from '../lib/dom';
 import useFormulaEditor from '../lib/hooks/useFormulaEditor';
 
-const CellStyle = {
+const CellStyle: React.CSSProperties = {
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
@@ -13,7 +12,10 @@ const CellStyle = {
   borderRight: 'thin solid #e0e0e0',
   padding: '4px',
   outline: '0px solid transparent',
-  textWrap: 'nowrap',
+};
+const ActiveCellNoContent = {
+  caretColor: 'transparent',
+  cursor: 'default',
 };
 
 const Cell = ({
@@ -213,14 +215,12 @@ const Cell = ({
             break;
         }
       }}
-      className={classNames({
-        'Spreadsheet-Active-Cell-No-Content': !isEditing,
-      })}
       style={{
         minWidth: `${width}px`,
         minHeight: `${height}px`,
         maxWidth: `${width}px`,
         ...CellStyle,
+        ...(!isEditing ? ActiveCellNoContent : {}),
       }}
       onBeforeInput={(e) => {
         if (writeMethod === 'overwrite') {
@@ -256,6 +256,8 @@ const Cell = ({
         }
       }}
       onMouseMove={(e) => {
+        // TODO: Don't initiate dragging when mouse didn't moved
+        //  from starting cell.
         if (
           !isSelectingCellsForFormula &&
           e.target instanceof HTMLDivElement &&

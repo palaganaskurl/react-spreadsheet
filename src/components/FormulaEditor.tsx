@@ -1,7 +1,25 @@
 import React from 'react';
-import classNames from 'classnames';
 import useFormulaEditor from '../lib/hooks/useFormulaEditor';
 import { useSpreadsheet } from '../state/useSpreadsheet';
+
+const FormulaContainerStyle: React.CSSProperties = {
+  width: '70%',
+  display: 'flex',
+  flexDirection: 'row',
+  gap: '8px',
+};
+const FormulaEditorIconStyle: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'row',
+  padding: '10px',
+  alignItems: 'center',
+};
+const FormulaContentEditorStyle: React.CSSProperties = {
+  width: '100%',
+  display: 'flex',
+  flexDirection: 'row',
+  padding: '10px',
+};
 
 const FormulaEditor = () => {
   const { resolveFormula } = useFormulaEditor();
@@ -50,16 +68,8 @@ const FormulaEditor = () => {
   }, [activeCellValue]);
 
   return (
-    <div
-      className={classNames({
-        'Spreadsheet-Formula': true,
-      })}
-    >
-      <div
-        className={classNames({
-          'Spreadsheet-Formula-Editor-Icon': true,
-        })}
-      >
+    <div style={FormulaContainerStyle}>
+      <div style={FormulaEditorIconStyle}>
         <img
           alt="formula-icon"
           height="15"
@@ -76,9 +86,7 @@ const FormulaEditor = () => {
         }}
         suppressContentEditableWarning
         contentEditable
-        className={classNames({
-          'Spreadsheet-Formula-Editor': true,
-        })}
+        style={FormulaContentEditorStyle}
         onInput={onFormulaInput}
         ref={formulaRef}
         onKeyUp={(e) => {

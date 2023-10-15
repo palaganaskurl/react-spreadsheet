@@ -6,6 +6,19 @@ import { useSpreadsheet } from '../state/useSpreadsheet';
 import { ColumnContextMenuID } from '../constants';
 import { numberToExcelHeader } from '../lib/spreadsheet';
 
+const ColumnHeaderStyle: React.CSSProperties = {
+  borderBottom: 'thin solid #e0e0e0',
+  borderRight: 'thin solid #e0e0e0',
+  borderTop: 'thin solid #e0e0e0',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  userSelect: 'none',
+  MozUserSelect: 'none',
+  KhtmlUserSelect: 'none',
+  WebkitUserSelect: 'none',
+};
+
 const Column = ({ columnData, columnIndex }: ColumnProps) => {
   const { show } = useContextMenu({
     id: ColumnContextMenuID,
@@ -17,11 +30,11 @@ const Column = ({ columnData, columnIndex }: ColumnProps) => {
 
   return (
     <div
-      className="Spreadsheet-Column-Header"
       style={{
         width: `${columnData.width}px`,
         height: `${columnData.height}px`,
         padding: '4px', // TODO: Add variable for this one
+        ...ColumnHeaderStyle,
       }}
       onContextMenu={(e) =>
         show({
