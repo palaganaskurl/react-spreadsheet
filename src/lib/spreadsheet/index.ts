@@ -59,7 +59,13 @@ export const cellAddressToIndex = (cellAddress: string) => {
   }
 
   const columnLetters = columnLettersMatch[0];
-  const rowNumber = parseInt(cellAddress.match(/[0-9]+/)![0], 10);
+  const rowNumberMatch = cellAddress.match(/[0-9]+/);
+
+  if (rowNumberMatch === null) {
+    return null;
+  }
+
+  const rowNumber = parseInt(rowNumberMatch[0], 10);
 
   let columnIndex = 0;
 

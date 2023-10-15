@@ -13,6 +13,9 @@ const useFormulaEditor = () => {
     (state) => state.activeCell
   );
   const setCellData = useSpreadsheet((state) => state.setCellData);
+  const setFormulaCellSelectionPoints = useSpreadsheet(
+    (state) => state.setFormulaCellSelectionPoints
+  );
 
   const parseFormula = (e: React.FormEvent<HTMLDivElement>) => {
     const parsedFormula = parseFormulaHelper(e.currentTarget.textContent ?? '');
@@ -43,6 +46,7 @@ const useFormulaEditor = () => {
     setCellData(activeCellRow, activeCellColumn, {
       formulaEntities: entities,
     });
+    setFormulaCellSelectionPoints(entities);
   };
 
   const resolveFormula = (
