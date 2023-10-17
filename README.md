@@ -2,6 +2,7 @@
 
 ## Dependencies
 
+- https://github.com/bvaughn/react-virtualized (Virtualization)
 - https://github.com/react-grid-layout/react-resizable (For column resizing)
 - https://github.com/LesterLyu/fast-formula-parser (For sheet formula parsing)
 - https://github.com/fkhadra/react-contexify (For context menu)
