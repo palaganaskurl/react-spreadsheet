@@ -1,22 +1,21 @@
 import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { createPortal } from 'react-dom';
 import { useSpreadsheet } from '../state/useSpreadsheet';
 import { SelectionOverlayStyle } from '../types';
 import { selectionBorderWidth } from '../constants';
 
 const ActiveCellOverlay = () => {
-  const activeCell = useSpreadsheet((state) => state.activeCell);
+  const [activeRow, activeColumn] = useSpreadsheet((state) => state.activeCell);
+  const cellElement = document.querySelector(
+    `[data-row="${activeRow}"][data-column="${activeColumn}"]`
+  );
+
+  if (!cellElement) {
+    return null;
+  }
 
   const getOverlayStyles = (): SelectionOverlayStyle | null => {
-    const [row, column] = activeCell;
-    const cellElement = document.querySelector(
-      `[data-row="${row}"][data-column="${column}"]`
-    );
-
-    if (!cellElement) {
-      return null;
-    }
-
     const cellElementBoundingClientRect = cellElement?.getBoundingClientRect();
 
     return {
@@ -41,12 +40,12 @@ const ActiveCellOverlay = () => {
     return null;
   }
 
-  return (
+  return createPortal(
     <div
       id="activeCell"
       style={{
-        top: `${style.top}px`,
-        left: `${style.left}px`,
+        // top: `${style.top}px`,
+        // left: `${style.left}px`,
         width: `${style.width}px`,
         height: `${style.height}px`,
         position: 'absolute',
@@ -94,7 +93,8 @@ const ActiveCellOverlay = () => {
           ...commonStyles,
         }}
       />
-    </div>
+    </div>,
+    cellElement
   );
 };
 
