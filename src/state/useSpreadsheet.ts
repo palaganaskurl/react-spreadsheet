@@ -4,7 +4,6 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import {
   CellData,
   CellSelection,
-  ColumnData,
   FormulaCellSelection,
   FormulaEntity,
   Point,
@@ -19,11 +18,12 @@ export interface SpreadsheetState {
   cellRangeEnd: Point | null;
   cellRangeSelection: CellSelection | null;
   cellRangeStart: Point | null;
-  columns: ColumnData[];
+  columnWidths: Record<number, number>;
   data: CellData[][];
   emptyFormulaCellSelectionPoints: () => void;
   formulaCellSelections: FormulaCellSelection[];
   getCell: (row: number, column: number) => CellData | null;
+  getColumnWidth: (columnIndex: number) => number;
   getMatrixValues: () => Array<CellData['value'][]>;
   insertNewColumnAt: (column: number, where: 'before' | 'after') => void;
   insertNewRowAt: (row: number, where: 'before' | 'after') => void;
@@ -37,8 +37,7 @@ export interface SpreadsheetState {
   ) => void;
   setCellRangeEnd: (point: Point | null) => void;
   setCellRangeStart: (point: Point | null) => void;
-  setColumnWidth: (column: number, width: number) => void;
-  setColumns: (columns: ColumnData[]) => void;
+  setColumnWidth: (columnIndex: number, width: number) => void;
   setData: (data: CellData[][]) => void;
   setFormulaCellSelectionPoints: (
     formulaEntities: CellData['formulaEntities']
@@ -50,10 +49,20 @@ export interface SpreadsheetState {
   setIsSelectingCellsForFormula: (isSelectingCellsForFormula: boolean) => void;
 }
 
-const DEFAULT_COLUMN_WIDTH = 50;
-const DEFAULT_ROW_HEIGHT = 30;
-const COLUMN_COUNT = 20;
-const ROW_COUNT = 20;
+export const DEFAULT_COLUMN_WIDTH = 50;
+export const DEFAULT_ROW_HEIGHT = 30;
+export const COLUMN_COUNT = 26;
+export const ROW_COUNT = 500;
+
+const generateInitialColumnWidths = () => {
+  const columnWidths: Record<number, number> = {};
+
+  for (let i = 0; i < COLUMN_COUNT; i++) {
+    columnWidths[i] = DEFAULT_COLUMN_WIDTH;
+  }
+
+  return columnWidths;
+};
 
 const generateInitialData = () => {
   const initialRowData: CellData[][] = [];
@@ -63,8 +72,6 @@ const generateInitialData = () => {
 
     for (let j = 0; j < COLUMN_COUNT; j++) {
       initialRowData[i].push({
-        width: DEFAULT_COLUMN_WIDTH,
-        height: DEFAULT_ROW_HEIGHT,
         id: uuidv4(),
         value: '',
         formulaEntities: [],
@@ -78,14 +85,8 @@ const generateInitialData = () => {
 const useSpreadsheet = create<SpreadsheetState>()(
   persist(
     (set, get) => ({
+      columnWidths: generateInitialColumnWidths(),
       data: generateInitialData(),
-      columns: Array(COLUMN_COUNT)
-        .fill({})
-        .map(() => ({
-          height: DEFAULT_ROW_HEIGHT,
-          width: DEFAULT_COLUMN_WIDTH,
-          id: uuidv4(),
-        })),
       activeCell: [0, 0],
       cellRangeEnd: null,
       cellRangeStart: null,
@@ -102,54 +103,16 @@ const useSpreadsheet = create<SpreadsheetState>()(
 
         return null;
       },
-      setColumnWidth: (column: number, width: number) => {
-        const { data } = get();
-
-        const updatedRowHeight = data.map((row) => {
-          const rowCopy = row.map((cell, columnIndex) => {
-            if (columnIndex === column) {
-              return {
-                ...cell,
-                ...{ width },
-              };
-            }
-
-            return cell;
-          });
-
-          return rowCopy;
-        });
-
-        set({
-          data: updatedRowHeight,
-        });
-      },
       setActiveCell: (row: number, column: number) => {
         set({
           activeCell: [row, column],
         });
         focusOnCell(row, column);
       },
-      setColumns: (columns: ColumnData[]) => {
-        set({
-          columns,
-        });
-      },
       insertNewRowAt: (row: number, where: 'before' | 'after') => {
-        const { data, columns } = get();
+        const { data } = get();
         const rowIndex = where === 'before' ? row : row + 1;
-        const newUUIDs = [];
-
-        for (let i = 0; i < columns.length; i++) {
-          newUUIDs.push({
-            height: columns[i].height,
-            width: columns[i].width,
-            id: uuidv4(),
-            selected: false,
-            value: '',
-            formulaEntities: [],
-          });
-        }
+        const newUUIDs: CellData[] = [];
 
         data.splice(rowIndex, 0, newUUIDs);
 
@@ -158,19 +121,11 @@ const useSpreadsheet = create<SpreadsheetState>()(
         });
       },
       insertNewColumnAt: (column: number, where: 'before' | 'after') => {
-        const { data, columns } = get();
+        const { data } = get();
         const columnIndex = where === 'before' ? column : column + 1;
-
-        columns.splice(columnIndex, 0, {
-          height: DEFAULT_ROW_HEIGHT,
-          width: DEFAULT_COLUMN_WIDTH,
-          id: uuidv4(),
-        });
 
         for (let i = 0; i < data.length; i++) {
           data[i].splice(columnIndex, 0, {
-            height: DEFAULT_ROW_HEIGHT,
-            width: DEFAULT_COLUMN_WIDTH,
             id: uuidv4(),
             value: '',
             formulaEntities: [],
@@ -415,8 +370,21 @@ const useSpreadsheet = create<SpreadsheetState>()(
           isEditingAtFormulaEditor,
         });
       },
+      setColumnWidth: (columnIndex: number, width: number) => {
+        const { columnWidths } = get();
+
+        columnWidths[columnIndex] = width;
+
+        set({ columnWidths: { ...columnWidths } });
+      },
+      getColumnWidth: (columnIndex: number) => {
+        const { columnWidths } = get();
+
+        return columnWidths[columnIndex];
+      },
     }),
     {
+      skipHydration: true,
       name: 'react-spreadsheet-storage',
       storage: createJSONStorage(() => sessionStorage),
       partialize: (state) =>

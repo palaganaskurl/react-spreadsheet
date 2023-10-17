@@ -17,21 +17,20 @@ export type FormulaEntity = {
 
 export type CellData = {
   formulaEntities: FormulaEntity[];
-  height: number;
   id: string;
   result?: number;
   value: string;
-  width: number;
 };
 
 export interface CellProps extends CellData {
   column: number;
   row: number;
+  style: React.CSSProperties;
 }
 
 export interface RowProps {
-  children: React.ReactNode;
-  index: number;
+  rowIndex: number;
+  style: React.CSSProperties;
 }
 
 export interface RowContextMenuProps {
@@ -39,8 +38,8 @@ export interface RowContextMenuProps {
 }
 
 export interface ColumnProps {
-  columnData: ColumnData;
   columnIndex: number;
+  style: React.CSSProperties;
 }
 
 export interface ColumnContextMenuProps {

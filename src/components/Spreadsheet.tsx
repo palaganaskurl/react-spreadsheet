@@ -1,44 +1,23 @@
 import React from 'react';
 import './Spreadsheet.css';
 import 'react-resizable/css/styles.css';
+import { MultiGrid, AutoSizer, GridCellProps } from 'react-virtualized';
 import Cell from './Cell';
-import { useSpreadsheet } from '../state/useSpreadsheet';
-import Row from './Row';
+import {
+  COLUMN_COUNT,
+  DEFAULT_ROW_HEIGHT,
+  useSpreadsheet,
+} from '../state/useSpreadsheet';
 import RowContextMenu from './RowContextMenu';
 import ColumnContextMenu from './ColumnContextMenu';
-import Column from './Column';
+import ColumnLabel from './ColumnLabel';
 import { getCellAddressLabel } from '../lib/spreadsheet';
 import CellRangeSelectionOverlay from './CellRangeSelectionOverlay';
 import FormulaEditor from './FormulaEditor';
 import FormulaCellSelectionOverlay from './FormulaCellSelectionOverlay';
 import ActiveCellOverlay from './ActiveCellOverlay';
+import RowLabel from './RowLabel';
 
-const ColumnHeadersStyle: React.CSSProperties = {
-  display: 'flex',
-  flexDirection: 'row',
-};
-const RowsStyle: React.CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-};
-const ColumnLabelStyle: React.CSSProperties = {
-  minWidth: '50px',
-  minHeight: '30px',
-  backgroundColor: '#f5f5f5',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  borderRight: 'thin solid #e0e0e0',
-  borderLeft: 'thin solid #e0e0e0',
-  borderBottom: 'thin solid #e0e0e0',
-  userSelect: 'none',
-  MozUserSelect: 'none',
-  KhtmlUserSelect: 'none',
-  WebkitUserSelect: 'none',
-};
-const ColumnFirstLabelStyle: React.CSSProperties = {
-  borderTop: 'thin solid #e0e0e0',
-};
 const FormulaBarStyle: React.CSSProperties = {
   display: 'flex',
   flexDirection: 'row',
@@ -55,21 +34,20 @@ const FormulaBarActiveCellStyle: React.CSSProperties = {
 };
 
 export function Spreadsheet() {
-  const rowData = useSpreadsheet((state) => state.data);
-  const columns = useSpreadsheet((state) => state.columns);
+  const spreadsheetData = useSpreadsheet((state) => state.data);
   const [activeCellRow, activeCellColumn] = useSpreadsheet(
     (state) => state.activeCell
   );
   const cellRangeStart = useSpreadsheet((state) => state.cellRangeStart);
   const cellRangeEnd = useSpreadsheet((state) => state.cellRangeEnd);
 
-  React.useEffect(() => {
-    const rehydrate = async () => {
-      await useSpreadsheet.persist.rehydrate();
-    };
+  // React.useEffect(() => {
+  //   const rehydrate = async () => {
+  //     await useSpreadsheet.persist.rehydrate();
+  //   };
 
-    rehydrate();
-  }, []);
+  //   // rehydrate();
+  // }, []);
 
   const renderCellAddressLabel = () => {
     if (cellRangeStart !== null && cellRangeEnd !== null) {
@@ -85,30 +63,69 @@ export function Spreadsheet() {
     return getCellAddressLabel(activeCellRow, activeCellColumn);
   };
 
+  const cellRenderer = ({
+    columnIndex,
+    key,
+    rowIndex,
+    style,
+  }: GridCellProps) => {
+    if (rowIndex === 0 && columnIndex === 0) {
+      return <div style={style} key={key} />;
+    }
+
+    if (rowIndex === 0) {
+      return <ColumnLabel key={key} style={style} columnIndex={columnIndex} />;
+    }
+
+    if (columnIndex === 0) {
+      return <RowLabel key={key} style={style} rowIndex={rowIndex} />;
+    }
+
+    const cell = spreadsheetData[rowIndex][columnIndex];
+
+    return (
+      <Cell
+        row={rowIndex}
+        column={columnIndex}
+        style={style}
+        {...cell}
+        key={key}
+      />
+    );
+  };
+
+  const getColumnWidth = useSpreadsheet((state) => state.getColumnWidth);
+  const columnWidths = useSpreadsheet((state) => state.columnWidths);
+
+  React.useEffect(() => {
+    gridRef.current!.recomputeGridSize();
+  }, [columnWidths]);
+
+  const gridRef = React.useRef<MultiGrid>(null);
+
   return (
     <div className="Spreadsheet">
       <div style={FormulaBarStyle}>
         <div style={FormulaBarActiveCellStyle}>{renderCellAddressLabel()}</div>
         <FormulaEditor />
       </div>
-      <div style={ColumnHeadersStyle}>
-        <div style={{ ...ColumnLabelStyle, ...ColumnFirstLabelStyle }} />
-        {columns.map((columnData, columnIndex) => (
-          <Column
-            columnData={columnData}
-            columnIndex={columnIndex}
-            key={`columnHeader${columnData.id}`}
-          />
-        ))}
-      </div>
-      <div style={RowsStyle}>
-        {rowData.map((row, rowIndex) => (
-          <Row key={`row${rowIndex + 1}`} index={rowIndex}>
-            {row.map((cell, cellIndex) => (
-              <Cell row={rowIndex} column={cellIndex} {...cell} key={cell.id} />
-            ))}
-          </Row>
-        ))}
+      <div style={{ height: '70vh' }}>
+        <AutoSizer>
+          {({ width, height }: { height: number; width: number }) => (
+            <MultiGrid
+              ref={gridRef}
+              cellRenderer={cellRenderer}
+              columnWidth={({ index }) => getColumnWidth(index)}
+              columnCount={COLUMN_COUNT}
+              fixedColumnCount={1}
+              fixedRowCount={1}
+              height={height}
+              rowHeight={DEFAULT_ROW_HEIGHT}
+              rowCount={spreadsheetData.length}
+              width={width}
+            />
+          )}
+        </AutoSizer>
       </div>
       <RowContextMenu />
       <ColumnContextMenu />

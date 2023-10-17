@@ -98,4 +98,4 @@ const ActiveCellOverlay = () => {
   );
 };
 
-export default React.memo(ActiveCellOverlay);
+export default ActiveCellOverlay;

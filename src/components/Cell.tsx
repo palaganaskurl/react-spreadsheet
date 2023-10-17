@@ -10,7 +10,7 @@ const CellStyle: React.CSSProperties = {
   alignItems: 'center',
   borderBottom: 'thin solid #e0e0e0',
   borderRight: 'thin solid #e0e0e0',
-  padding: '4px',
+  // padding: '4px',
   outline: '0px solid transparent',
 };
 const ActiveCellNoContent = {
@@ -19,14 +19,12 @@ const ActiveCellNoContent = {
 };
 
 const Cell = ({
-  width,
-  height,
   row,
   column,
-  id,
   value,
   result,
   formulaEntities,
+  style,
 }: CellProps) => {
   const setCellData = useSpreadsheet((state) => state.setCellData);
   const setActiveCell = useSpreadsheet((state) => state.setActiveCell);
@@ -90,9 +88,8 @@ const Cell = ({
 
   return (
     <div
-      id={id}
       onBlur={() => {
-        setEditing(false);
+        // setEditing(false);
       }}
       // TODO: Think of a better way to not rely on data-attributes
       //  in range selection
@@ -216,11 +213,9 @@ const Cell = ({
         }
       }}
       style={{
-        minWidth: `${width}px`,
-        minHeight: `${height}px`,
-        maxWidth: `${width}px`,
         ...CellStyle,
         ...(!isEditing ? ActiveCellNoContent : {}),
+        ...style,
       }}
       onBeforeInput={(e) => {
         if (writeMethod === 'overwrite') {
