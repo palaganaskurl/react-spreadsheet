@@ -1,46 +1,18 @@
 import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { createPortal } from 'react-dom';
 import { useSpreadsheet } from '../state/useSpreadsheet';
-import { SelectionOverlayStyle } from '../types';
 import { selectionBorderWidth } from '../constants';
+import { getCellContainer } from '../lib/dom';
 
 const FormulaCellSelectionOverlay = () => {
   const formulaCellSelections = useSpreadsheet(
     (state) => state.formulaCellSelections
   );
-  // const scrollData = useSpreadsheet((state) => state.scrollData);
 
   if (formulaCellSelections.length === 0) {
     return null;
   }
-
-  const getOverlayStyles = (): SelectionOverlayStyle[] => {
-    const styles: SelectionOverlayStyle[] = [];
-
-    formulaCellSelections.forEach((selection) => {
-      const [row, column] = selection.point;
-      const cellElement = document.querySelector(
-        `[data-row="${row}"][data-column="${column}"]`
-      );
-
-      if (!cellElement) {
-        return;
-      }
-
-      const cellElementBoundingClientRect =
-        cellElement?.getBoundingClientRect();
-
-      styles.push({
-        borderColor: selection.borderColor,
-        top: cellElementBoundingClientRect.top + window.scrollY,
-        left: cellElementBoundingClientRect.left + window.scrollX,
-        width: cellElementBoundingClientRect.width,
-        height: cellElementBoundingClientRect.height,
-      });
-    });
-
-    return styles;
-  };
 
   const commonStyles: React.CSSProperties = {
     position: 'absolute',
@@ -48,15 +20,28 @@ const FormulaCellSelectionOverlay = () => {
   };
 
   return (
-    <div id="formulaSelectionOverlay">
-      {getOverlayStyles().map((style) => {
+    <>
+      {formulaCellSelections.map((selection) => {
+        const [row, column] = selection.point;
+        const cellElement = getCellContainer(row, column);
+
+        if (cellElement === null) {
+          return null;
+        }
+
+        const cellElementBoundingClientRect =
+          cellElement?.getBoundingClientRect();
+
+        const style = {
+          borderColor: selection.borderColor,
+          width: cellElementBoundingClientRect.width,
+          height: cellElementBoundingClientRect.height,
+        };
         const borderColor = `#${style.borderColor}`;
 
-        return (
+        return createPortal(
           <div
             style={{
-              top: `${style.top}px`,
-              left: `${style.left}px`,
               width: `${style.width}px`,
               height: `${style.height}px`,
               position: 'absolute',
@@ -107,10 +92,11 @@ const FormulaCellSelectionOverlay = () => {
                 ...commonStyles,
               }}
             />
-          </div>
+          </div>,
+          cellElement
         );
       })}
-    </div>
+    </>
   );
 };
 

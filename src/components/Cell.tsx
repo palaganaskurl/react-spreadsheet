@@ -11,7 +11,7 @@ const CellStyle: React.CSSProperties = {
   outline: '0px solid transparent',
 };
 const ActiveCellNoContent = {
-  caretColor: 'transparent',
+  caretColor: 'transparent', // TODO: Culprit for the cursor not showing
   cursor: 'default',
 };
 
