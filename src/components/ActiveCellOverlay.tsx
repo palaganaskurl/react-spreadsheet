@@ -58,8 +58,6 @@ const ActiveCellOverlay = () => {
       style={{
         width: `${style.width}px`,
         height: `${style.height}px`,
-        // top: `${style.top}px`,
-        // left: `${style.left}px`,
         position: 'absolute',
         ...commonStyles,
       }}
@@ -105,6 +103,7 @@ const ActiveCellOverlay = () => {
           ...commonStyles,
         }}
       />
+      {/* TODO: Try to remove this, and createPortal for this one and then memoized ActiveCellOverlay */}
       <CellEditor />
     </div>,
     cellElement
