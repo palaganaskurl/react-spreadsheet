@@ -8,6 +8,7 @@ const FormulaCellSelectionOverlay = () => {
   const formulaCellSelections = useSpreadsheet(
     (state) => state.formulaCellSelections
   );
+  // const scrollData = useSpreadsheet((state) => state.scrollData);
 
   if (formulaCellSelections.length === 0) {
     return null;

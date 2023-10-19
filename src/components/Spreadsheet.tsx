@@ -75,8 +75,6 @@ export function Spreadsheet() {
       return null;
     }
 
-    // setIsScrolling(isScrolling);
-
     const cell = spreadsheetData[rowIndex][columnIndex];
 
     return (
@@ -127,143 +125,157 @@ export function Spreadsheet() {
     <div key={key} style={style} />
   );
 
+  const activeCell = useSpreadsheet((state) => state.activeCell);
+
+  React.useEffect(() => {
+    const inputBox = document.querySelector<HTMLDivElement>('#inputBox');
+
+    if (inputBox === null) {
+      return;
+    }
+
+    inputBox.focus();
+    // cellsGridRef.current!.forceUpdate();
+  }, [activeCell]);
+
   return (
     <div className="Spreadsheet">
       <div style={FormulaBarStyle}>
         <div style={FormulaBarActiveCellStyle}>{renderCellAddressLabel()}</div>
         <FormulaEditor />
       </div>
-      <div>
+      <div
+        id="gridContainer"
+        style={{
+          zIndex: 5,
+        }}
+      >
         <ScrollSync>
-          {({ onScroll, scrollLeft, scrollTop }) => {
-            console.log('Scrolling');
-
-            return (
+          {({ onScroll, scrollLeft, scrollTop }) => (
+            <div
+              style={{
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'row',
+              }}
+            >
               <div
                 style={{
-                  position: 'relative',
-                  display: 'flex',
-                  flexDirection: 'row',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  flex: '0 0 75px',
+                  zIndex: 10,
                 }}
               >
-                <div
+                <Grid
+                  ref={upperRightGridRef}
+                  cellRenderer={renderLeftHeaderCell}
+                  width={DEFAULT_COLUMN_WIDTH}
+                  height={DEFAULT_ROW_HEIGHT}
+                  rowHeight={DEFAULT_ROW_HEIGHT}
+                  columnWidth={({ index }) => getColumnWidth(index)}
+                  rowCount={1}
+                  columnCount={1}
                   style={{
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
-                    flex: '0 0 75px',
-                    zIndex: 10,
+                    overflow: 'hidden',
                   }}
-                >
-                  <Grid
-                    ref={upperRightGridRef}
-                    cellRenderer={renderLeftHeaderCell}
-                    width={DEFAULT_COLUMN_WIDTH}
-                    height={DEFAULT_ROW_HEIGHT}
-                    rowHeight={DEFAULT_ROW_HEIGHT}
-                    columnWidth={({ index }) => getColumnWidth(index)}
-                    rowCount={1}
-                    columnCount={1}
-                    style={{
-                      overflow: 'hidden',
-                    }}
-                  />
-                </div>
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    top: DEFAULT_ROW_HEIGHT,
-                    flex: '0 0 75px',
-                    zIndex: 10,
-                  }}
-                >
-                  <Grid
-                    ref={rowLabelGridRef}
-                    overscanColumnCount={overscanColumnCount}
-                    overscanRowCount={overscanRowCount}
-                    cellRenderer={rowLabelRenderer}
-                    columnWidth={({ index }) => getColumnWidth(index)}
-                    columnCount={1}
-                    style={{
-                      overflow: 'hidden',
-                    }}
-                    height={height - scrollbarSize()}
-                    rowHeight={DEFAULT_ROW_HEIGHT}
-                    rowCount={50}
-                    scrollTop={scrollTop}
-                    width={DEFAULT_COLUMN_WIDTH}
-                  />
-                </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    flex: '1 1 auto',
-                  }}
-                >
-                  <AutoSizer disableHeight>
-                    {({ width }) => (
-                      <div>
-                        <div
-                          style={{
-                            height: DEFAULT_ROW_HEIGHT,
-                            width: width - scrollbarSize(),
-                          }}
-                        >
-                          <Grid
-                            ref={columnLabelGridRef}
-                            style={{
-                              width: '100%',
-                              overflow: 'hidden',
-                            }}
-                            columnWidth={({ index }) => getColumnWidth(index)}
-                            columnCount={COLUMN_COUNT}
-                            height={height}
-                            overscanColumnCount={overscanColumnCount}
-                            cellRenderer={renderHeaderCell}
-                            rowHeight={DEFAULT_ROW_HEIGHT}
-                            rowCount={1}
-                            scrollLeft={scrollLeft}
-                            width={width - scrollbarSize()}
-                          />
-                        </div>
-                        <div
-                          style={{
-                            height,
-                            width,
-                          }}
-                        >
-                          <Grid
-                            ref={cellsGridRef}
-                            cellRenderer={cellRenderer}
-                            columnWidth={({ index }) => getColumnWidth(index)}
-                            columnCount={COLUMN_COUNT}
-                            height={height}
-                            rowHeight={DEFAULT_ROW_HEIGHT}
-                            rowCount={spreadsheetData.length}
-                            width={width}
-                            onScroll={(params) => {
-                              onScroll(params);
-
-                              setScrollData({
-                                scrollTop: params.scrollTop,
-                                scrollLeft: params.scrollLeft,
-                              });
-                            }}
-                            style={{
-                              width: '100%',
-                            }}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </AutoSizer>
-                  <ActiveCellOverlay />
-                </div>
+                />
               </div>
-            );
-          }}
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: DEFAULT_ROW_HEIGHT,
+                  flex: '0 0 75px',
+                  zIndex: 10,
+                }}
+              >
+                <Grid
+                  ref={rowLabelGridRef}
+                  overscanColumnCount={overscanColumnCount}
+                  overscanRowCount={overscanRowCount}
+                  cellRenderer={rowLabelRenderer}
+                  columnWidth={({ index }) => getColumnWidth(index)}
+                  columnCount={1}
+                  style={{
+                    overflow: 'hidden',
+                  }}
+                  height={height - scrollbarSize()}
+                  rowHeight={DEFAULT_ROW_HEIGHT}
+                  rowCount={50}
+                  scrollTop={scrollTop}
+                  width={DEFAULT_COLUMN_WIDTH}
+                />
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  flex: '1 1 auto',
+                }}
+              >
+                <AutoSizer disableHeight>
+                  {({ width }) => (
+                    <div>
+                      <div
+                        style={{
+                          height: DEFAULT_ROW_HEIGHT,
+                          width: width - scrollbarSize(),
+                        }}
+                      >
+                        <Grid
+                          ref={columnLabelGridRef}
+                          style={{
+                            width: '100%',
+                            overflow: 'hidden',
+                          }}
+                          columnWidth={({ index }) => getColumnWidth(index)}
+                          columnCount={COLUMN_COUNT}
+                          height={height}
+                          overscanColumnCount={overscanColumnCount}
+                          cellRenderer={renderHeaderCell}
+                          rowHeight={DEFAULT_ROW_HEIGHT}
+                          rowCount={1}
+                          scrollLeft={scrollLeft}
+                          width={width - scrollbarSize()}
+                        />
+                      </div>
+                      <div
+                        style={{
+                          height,
+                          width,
+                        }}
+                      >
+                        <Grid
+                          ref={cellsGridRef}
+                          cellRenderer={cellRenderer}
+                          columnWidth={({ index }) => getColumnWidth(index)}
+                          columnCount={COLUMN_COUNT}
+                          height={height}
+                          rowHeight={DEFAULT_ROW_HEIGHT}
+                          rowCount={spreadsheetData.length}
+                          width={width}
+                          onScroll={(params) => {
+                            onScroll(params);
+
+                            setScrollData({
+                              scrollTop: params.scrollTop,
+                              scrollLeft: params.scrollLeft,
+                            });
+                          }}
+                          style={{
+                            width: '100%',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </AutoSizer>
+                <ActiveCellOverlay />
+              </div>
+            </div>
+          )}
         </ScrollSync>
       </div>
       <RowContextMenu />

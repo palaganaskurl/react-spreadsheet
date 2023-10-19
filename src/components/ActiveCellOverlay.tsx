@@ -1,14 +1,16 @@
 import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { DEFAULT_ROW_HEIGHT, useSpreadsheet } from '../state/useSpreadsheet';
+import { createPortal } from 'react-dom';
+import { useSpreadsheet } from '../state/useSpreadsheet';
 import { SelectionOverlayStyle } from '../types';
 import { selectionBorderWidth } from '../constants';
+import { getCellContainer, getGridContainer } from '../lib/dom';
+import CellEditor from './CellEditor';
 
 const ActiveCellOverlay = () => {
+  // TODO: Fix an issue where when I type single character, it stops
   const [activeRow, activeColumn] = useSpreadsheet((state) => state.activeCell);
-  const cellElement = document.querySelector<HTMLDivElement>(
-    `[data-row="${activeRow}"][data-column="${activeColumn}"]`
-  );
+  const cellElement = getCellContainer(activeRow, activeColumn);
   const scrollData = useSpreadsheet((state) => state.scrollData);
 
   if (!cellElement) {
@@ -17,19 +19,23 @@ const ActiveCellOverlay = () => {
 
   const getOverlayStyles = (): SelectionOverlayStyle | null => {
     const cellElementBoundingClientRect = cellElement.getBoundingClientRect();
+    const gridContainerBoundingRect =
+      getGridContainer().getBoundingClientRect();
 
     const top =
-      parseInt(cellElement.style.top.replace('px', ''), 10) -
+      cellElementBoundingClientRect.top -
+      gridContainerBoundingRect.top -
       scrollData.scrollTop;
     const left =
-      parseInt(cellElement.style.left.replace('px', ''), 10) -
+      cellElementBoundingClientRect.left -
+      gridContainerBoundingRect.left -
       scrollData.scrollLeft;
 
     return {
       borderColor: '#0b57d0',
       width: cellElementBoundingClientRect.width,
       height: cellElementBoundingClientRect.height,
-      top: top + DEFAULT_ROW_HEIGHT,
+      top,
       left,
     };
   };
@@ -47,14 +53,14 @@ const ActiveCellOverlay = () => {
     return null;
   }
 
-  return (
+  return createPortal(
     <div
       id="activeCell"
       style={{
         width: `${style.width}px`,
         height: `${style.height}px`,
-        top: `${style.top}px`,
-        left: `${style.left}px`,
+        // top: `${style.top}px`,
+        // left: `${style.left}px`,
         position: 'absolute',
         ...commonStyles,
       }}
@@ -100,7 +106,9 @@ const ActiveCellOverlay = () => {
           ...commonStyles,
         }}
       />
-    </div>
+      <CellEditor />
+    </div>,
+    cellElement
   );
 };
 
