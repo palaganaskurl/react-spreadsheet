@@ -50,6 +50,8 @@ export interface SpreadsheetState {
   setIsEditingAtFormulaEditor: (isEditingAtFormulaEditor: boolean) => void;
   setIsSelectingCellsForFormula: (isSelectingCellsForFormula: boolean) => void;
   setScrollData: (scrollData: ScrollData) => void;
+  setWriteMethod: (writeMethod: 'overwrite' | 'append') => void;
+  writeMethod: 'overwrite' | 'append';
 }
 
 export const DEFAULT_COLUMN_WIDTH = 50;
@@ -233,11 +235,10 @@ const useSpreadsheet = create<SpreadsheetState>()(
         );
 
         const borderColor = generateRandomColor();
+        const [row, column] = formulaCellSelectionPoint;
+        const cellAddress = getCellAddressLabel(row, column);
 
         if (variableCount === 0) {
-          const [row, column] = formulaCellSelectionPoint;
-          const cellAddress = getCellAddressLabel(row, column);
-
           const formulaEntity: FormulaEntity = {
             row,
             column,
@@ -265,8 +266,6 @@ const useSpreadsheet = create<SpreadsheetState>()(
         }
 
         if (operationCount === variableCount - 1) {
-          const [row, column] = formulaCellSelectionPoint;
-          const cellAddress = getCellAddressLabel(row, column);
           const formulaEntity: FormulaEntity = {
             row,
             column,
@@ -275,10 +274,8 @@ const useSpreadsheet = create<SpreadsheetState>()(
             borderColor,
           };
 
-          // TODO: Fix this
-          const arrayFromFormulaEntities = Array.from(
-            data[activeRow][activeColumn].formulaEntities
-          );
+          const arrayFromFormulaEntities =
+            data[activeRow][activeColumn].formulaEntities;
           const arrayFromFormulaCellSelections = Array.from(
             formulaCellSelections
           );
@@ -303,8 +300,6 @@ const useSpreadsheet = create<SpreadsheetState>()(
             data: [...data],
           });
         } else {
-          const [row, column] = formulaCellSelectionPoint;
-          const cellAddress = getCellAddressLabel(row, column);
           const formulaEntity: FormulaEntity = {
             row,
             column,
@@ -391,6 +386,13 @@ const useSpreadsheet = create<SpreadsheetState>()(
       },
       setScrollData: (scrollData: ScrollData) => {
         set({ scrollData });
+      },
+      writeMethod: 'overwrite',
+      setWriteMethod: (writeMethod: 'overwrite' | 'append') => {
+        console.log('setting write method', writeMethod);
+        set({
+          writeMethod,
+        });
       },
     }),
     {

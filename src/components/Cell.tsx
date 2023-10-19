@@ -25,25 +25,23 @@ const Cell = ({
 }: CellProps) => {
   const setActiveCell = useSpreadsheet((state) => state.setActiveCell);
   const [activeRow, activeColumn] = useSpreadsheet((state) => state.activeCell);
-
-  const [isEditing, setEditing] = React.useState<boolean>(false);
+  const isSelectingCellsForFormula = useSpreadsheet(
+    (state) => state.isSelectingCellsForFormula
+  );
 
   const cellRef = React.useRef<HTMLDivElement>(null);
 
   const getCellContent = () => {
     if (isSelectingCellsForFormula) {
-      return (value || '').toString();
+      return value;
     }
 
-    return result?.toString() || (value || '').toString();
+    return result?.toString() || value;
   };
 
   const setCellRangeStart = useSpreadsheet((state) => state.setCellRangeStart);
   const setCellRangeEnd = useSpreadsheet((state) => state.setCellRangeEnd);
 
-  const isSelectingCellsForFormula = useSpreadsheet(
-    (state) => state.isSelectingCellsForFormula
-  );
   const setFormulaEntitiesFromCellSelection = useSpreadsheet(
     (state) => state.setFormulaEntitiesFromCellSelection
   );
@@ -63,12 +61,11 @@ const Cell = ({
 
   const isCellActive = () => activeRow === row && activeColumn === column;
 
+  const setWriteMethod = useSpreadsheet((state) => state.setWriteMethod);
+
   return (
     <div
       onKeyDown={() => {}}
-      onBlur={() => {
-        setEditing(false);
-      }}
       // TODO: Think of a better way to not rely on data-attributes
       //  in range selection
       data-row={row}
@@ -81,30 +78,17 @@ const Cell = ({
         switch (e.detail) {
           case 1: {
             setActiveCellConditionally();
-            // setWriteMethod('overwrite');
+
+            if (!isSelectingCellsForFormula) {
+              setWriteMethod('overwrite');
+            }
 
             break;
           }
           case 2: {
-            // cellRef.current!.textContent = value;
-
-            // if (value.startsWith('=')) {
-            //   setIsSelectingCellsForFormula(true);
-            //   setActiveCell(row, column);
-            //   parseFormula(e);
-            // }
-
-            setFormulaCellSelectionPoints(formulaEntities);
-            // setCellData(row, column, {
-            //   value,
-            // });
-            // setEditing(true);
             setActiveCellConditionally();
-            // setWriteMethod('append');
-
-            // if (cellRef.current) {
-            //   placeCaretAtEnd(cellRef.current);
-            // }
+            setWriteMethod('append');
+            setFormulaCellSelectionPoints(formulaEntities);
 
             break;
           }
@@ -115,7 +99,7 @@ const Cell = ({
       }}
       style={{
         ...CellStyle,
-        ...(!isEditing ? ActiveCellNoContent : {}),
+        ...ActiveCellNoContent,
         ...style,
       }}
       onMouseDown={() => {

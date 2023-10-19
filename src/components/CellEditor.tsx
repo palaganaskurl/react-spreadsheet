@@ -1,12 +1,13 @@
 import React from 'react';
 import useFormulaEditor from '../lib/hooks/useFormulaEditor';
 import { useSpreadsheet } from '../state/useSpreadsheet';
+import { placeCaretAtEnd } from '../lib/dom';
 
 const CellEditor = () => {
+  // TODO: When write method is "append", make the cursor
   const [activeRow, activeColumn] = useSpreadsheet((state) => state.activeCell);
-  const [writeMethod, setWriteMethod] = React.useState<'overwrite' | 'append'>(
-    'overwrite'
-  );
+  const writeMethod = useSpreadsheet((state) => state.writeMethod);
+  const setWriteMethod = useSpreadsheet((state) => state.setWriteMethod);
   const setCellData = useSpreadsheet((state) => state.setCellData);
   const getCell = useSpreadsheet((state) => state.getCell);
   const cellData = getCell(activeRow, activeColumn);
@@ -14,9 +15,20 @@ const CellEditor = () => {
     (state) => state.setIsSelectingCellsForFormula
   );
   const setActiveCell = useSpreadsheet((state) => state.setActiveCell);
+  const emptyFormulaCellSelectionPoints = useSpreadsheet(
+    (state) => state.emptyFormulaCellSelectionPoints
+  );
   const { resolveFormula, parseFormula } = useFormulaEditor();
 
   const inputBoxRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (inputBoxRef.current === null) {
+      return;
+    }
+
+    placeCaretAtEnd(inputBoxRef.current);
+  }, [cellData]);
 
   return (
     <div
@@ -44,7 +56,7 @@ const CellEditor = () => {
 
         if (cellContent.startsWith('=')) {
           setIsSelectingCellsForFormula(true);
-          setActiveCell(activeRow, activeColumn); // TODO: Check if this can be removed
+          setWriteMethod('append');
           parseFormula(e);
         }
 
@@ -89,14 +101,13 @@ const CellEditor = () => {
       onKeyUp={(e) => {
         switch (e.key) {
           case 'Enter': {
-            // setEditing(false);
+            const cellContent = e.currentTarget.textContent ?? '';
+
             setIsSelectingCellsForFormula(false);
 
             const { evaluatedFormula, formulaResult } = resolveFormula(
-              cellData?.value
+              cellData?.value || ''
             );
-
-            console.log('evaluatedFormula', evaluatedFormula, formulaResult);
 
             if (evaluatedFormula && formulaResult) {
               // Since the Cell is memoized, it doesn't re-render
@@ -106,25 +117,25 @@ const CellEditor = () => {
               // cellRef.current!.textContent = formulaResult;
             }
 
-            // emptyFormulaCellSelectionPoints();
+            emptyFormulaCellSelectionPoints();
             setActiveCell(activeRow + 1, activeColumn);
             setCellData(activeRow, activeColumn, {
-              value: e.currentTarget.textContent,
+              value: cellContent,
             });
 
             break;
           }
           case 'Escape': {
-            // setEditing(false);
-            // setIsSelectingCellsForFormula(false);
-            // emptyFormulaCellSelectionPoints();
-            // // TODO: Ideally, this should be set to the value
-            // //  before Enter or Blurred.
-            // // Maybe need to check on saving the value while
-            // //  user is inputting
-            // setCellData(row, column, {
-            //   value,
-            // });
+            setIsSelectingCellsForFormula(false);
+            emptyFormulaCellSelectionPoints();
+
+            // TODO: Ideally, this should be set to the value
+            //  before Enter or Blurred.
+            // Maybe need to check on saving the value while
+            //  user is inputting
+            setCellData(activeRow, activeColumn, {
+              value: cellData?.value,
+            });
             break;
           }
           default:

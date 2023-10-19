@@ -8,7 +8,6 @@ import { getCellContainer, getGridContainer } from '../lib/dom';
 import CellEditor from './CellEditor';
 
 const ActiveCellOverlay = () => {
-  // TODO: Fix an issue where when I type single character, it stops
   const [activeRow, activeColumn] = useSpreadsheet((state) => state.activeCell);
   const cellElement = getCellContainer(activeRow, activeColumn);
   const scrollData = useSpreadsheet((state) => state.scrollData);
@@ -112,4 +111,4 @@ const ActiveCellOverlay = () => {
   );
 };
 
-export default React.memo(ActiveCellOverlay);
+export default ActiveCellOverlay;
