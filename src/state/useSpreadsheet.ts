@@ -7,6 +7,7 @@ import {
   FormulaCellSelection,
   FormulaEntity,
   Point,
+  ScrollData,
 } from '../types';
 import { generateRandomColor } from '../lib/color';
 import { getCellAddressLabel } from '../lib/spreadsheet';
@@ -29,6 +30,7 @@ export interface SpreadsheetState {
   insertNewRowAt: (row: number, where: 'before' | 'after') => void;
   isEditingAtFormulaEditor: boolean;
   isSelectingCellsForFormula: boolean;
+  scrollData: ScrollData;
   setActiveCell: (row: number, column: number) => void;
   setCellData: (
     row: number,
@@ -47,6 +49,7 @@ export interface SpreadsheetState {
   ) => void;
   setIsEditingAtFormulaEditor: (isEditingAtFormulaEditor: boolean) => void;
   setIsSelectingCellsForFormula: (isSelectingCellsForFormula: boolean) => void;
+  setScrollData: (scrollData: ScrollData) => void;
 }
 
 export const DEFAULT_COLUMN_WIDTH = 50;
@@ -381,6 +384,13 @@ const useSpreadsheet = create<SpreadsheetState>()(
         const { columnWidths } = get();
 
         return columnWidths[columnIndex];
+      },
+      scrollData: {
+        scrollTop: 0,
+        scrollLeft: 0,
+      },
+      setScrollData: (scrollData: ScrollData) => {
+        set({ scrollData });
       },
     }),
     {

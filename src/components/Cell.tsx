@@ -10,7 +10,6 @@ const CellStyle: React.CSSProperties = {
   alignItems: 'center',
   borderBottom: 'thin solid #e0e0e0',
   borderRight: 'thin solid #e0e0e0',
-  // padding: '4px',
   outline: '0px solid transparent',
 };
 const ActiveCellNoContent = {
@@ -89,7 +88,7 @@ const Cell = ({
   return (
     <div
       onBlur={() => {
-        // setEditing(false);
+        setEditing(false);
       }}
       // TODO: Think of a better way to not rely on data-attributes
       //  in range selection

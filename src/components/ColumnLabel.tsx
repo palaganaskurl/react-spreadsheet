@@ -54,6 +54,12 @@ const ColumnLabel = ({ columnIndex, style }: ColumnProps) => {
             },
           })
         }
+        style={{
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
       >
         {numberToExcelHeader(columnIndex)}
       </div>

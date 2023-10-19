@@ -1,29 +1,36 @@
 import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { createPortal } from 'react-dom';
-import { useSpreadsheet } from '../state/useSpreadsheet';
+import { DEFAULT_ROW_HEIGHT, useSpreadsheet } from '../state/useSpreadsheet';
 import { SelectionOverlayStyle } from '../types';
 import { selectionBorderWidth } from '../constants';
 
 const ActiveCellOverlay = () => {
   const [activeRow, activeColumn] = useSpreadsheet((state) => state.activeCell);
-  const cellElement = document.querySelector(
+  const cellElement = document.querySelector<HTMLDivElement>(
     `[data-row="${activeRow}"][data-column="${activeColumn}"]`
   );
+  const scrollData = useSpreadsheet((state) => state.scrollData);
 
   if (!cellElement) {
     return null;
   }
 
   const getOverlayStyles = (): SelectionOverlayStyle | null => {
-    const cellElementBoundingClientRect = cellElement?.getBoundingClientRect();
+    const cellElementBoundingClientRect = cellElement.getBoundingClientRect();
+
+    const top =
+      parseInt(cellElement.style.top.replace('px', ''), 10) -
+      scrollData.scrollTop;
+    const left =
+      parseInt(cellElement.style.left.replace('px', ''), 10) -
+      scrollData.scrollLeft;
 
     return {
       borderColor: '#0b57d0',
-      top: cellElementBoundingClientRect.top + window.scrollY,
-      left: cellElementBoundingClientRect.left + window.scrollX,
       width: cellElementBoundingClientRect.width,
       height: cellElementBoundingClientRect.height,
+      top: top + DEFAULT_ROW_HEIGHT,
+      left,
     };
   };
 
@@ -40,14 +47,14 @@ const ActiveCellOverlay = () => {
     return null;
   }
 
-  return createPortal(
+  return (
     <div
       id="activeCell"
       style={{
-        // top: `${style.top}px`,
-        // left: `${style.left}px`,
         width: `${style.width}px`,
         height: `${style.height}px`,
+        top: `${style.top}px`,
+        left: `${style.left}px`,
         position: 'absolute',
         ...commonStyles,
       }}
@@ -93,9 +100,8 @@ const ActiveCellOverlay = () => {
           ...commonStyles,
         }}
       />
-    </div>,
-    cellElement
+    </div>
   );
 };
 
-export default ActiveCellOverlay;
+export default React.memo(ActiveCellOverlay);
