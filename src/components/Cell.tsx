@@ -32,7 +32,11 @@ const Cell = ({
   const cellRef = React.useRef<HTMLDivElement>(null);
 
   const getCellContent = () => {
-    if (isSelectingCellsForFormula) {
+    if (
+      isSelectingCellsForFormula &&
+      activeRow === row &&
+      activeColumn === column
+    ) {
       return value;
     }
 
