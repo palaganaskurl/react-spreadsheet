@@ -164,6 +164,7 @@ const CellEditor = () => {
             setCellData(activeRow, activeColumn, {
               value: cellData?.value,
             });
+            setWriteMethod('overwrite');
             break;
           }
           default:
