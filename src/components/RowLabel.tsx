@@ -23,20 +23,22 @@ const RowLabel = ({ rowIndex, style }: RowProps) => {
     id: RowContextMenuID,
   });
 
+  const rowIndexPlusOne = rowIndex + 1;
+
   return (
     <div
       style={{ ...style, ...RowNumberStyle }}
-      key={`row${rowIndex}`}
+      key={`row${rowIndexPlusOne}`}
       onContextMenu={(e) =>
         show({
           event: e,
           props: {
-            rowIndex,
+            rowIndexPlusOne,
           },
         })
       }
     >
-      {rowIndex}
+      {rowIndexPlusOne}
     </div>
   );
 };

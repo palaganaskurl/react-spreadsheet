@@ -43,14 +43,6 @@ export function Spreadsheet() {
   const cellRangeStart = useSpreadsheet((state) => state.cellRangeStart);
   const cellRangeEnd = useSpreadsheet((state) => state.cellRangeEnd);
 
-  // React.useEffect(() => {
-  //   const rehydrate = async () => {
-  //     await useSpreadsheet.persist.rehydrate();
-  //   };
-
-  //   // rehydrate();
-  // }, []);
-
   const renderCellAddressLabel = () => {
     if (cellRangeStart !== null && cellRangeEnd !== null) {
       const [rowRangeStart, columnRangeStart] = cellRangeStart;
@@ -75,12 +67,13 @@ export function Spreadsheet() {
       return null;
     }
 
-    const cell = spreadsheetData[rowIndex][columnIndex];
+    const columnIndexMinusOne = columnIndex - 1;
+    const cell = spreadsheetData[rowIndex][columnIndexMinusOne];
 
     return (
       <Cell
         row={rowIndex}
-        column={columnIndex}
+        column={columnIndexMinusOne}
         style={style}
         {...cell}
         key={key}
@@ -120,9 +113,17 @@ export function Spreadsheet() {
     return <ColumnLabel key={key} style={style} columnIndex={columnIndex} />;
   };
 
-  // TODO: Update the style of this
   const renderLeftHeaderCell = ({ key, style }: GridCellProps) => (
-    <div key={key} style={style} />
+    <div
+      key={key}
+      style={{
+        ...style,
+        ...{
+          backgroundColor: '#f5f5f5',
+          border: 'thin solid #e0e0e0',
+        },
+      }}
+    />
   );
 
   const activeCell = useSpreadsheet((state) => state.activeCell);
@@ -135,7 +136,6 @@ export function Spreadsheet() {
     }
 
     inputBox.focus();
-    // cellsGridRef.current!.forceUpdate();
   }, [activeCell]);
 
   return (

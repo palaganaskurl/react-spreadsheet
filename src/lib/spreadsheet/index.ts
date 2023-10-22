@@ -38,16 +38,6 @@ export const numberToExcelHeader = (index: number): string => {
   return chars[currentIndex % 26];
 };
 
-export const numberToExcelHeaderArray = (columnCount: number): string[] => {
-  const columnHeaders = [];
-
-  for (let i = 1; i <= columnCount; i++) {
-    columnHeaders.push(numberToExcelHeader(i));
-  }
-
-  return columnHeaders;
-};
-
 export const getCellAddressLabel = (row: number, column: number): string =>
   `${numberToExcelHeader(column + 1)}${row + 1}`;
 
