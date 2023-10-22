@@ -40,6 +40,12 @@ const Cell = ({
       return value;
     }
 
+    if (typeof result === 'object') {
+      // @ts-expect-error
+      // eslint-disable-next-line
+      return result._error;
+    }
+
     return result?.toString() || value;
   };
 

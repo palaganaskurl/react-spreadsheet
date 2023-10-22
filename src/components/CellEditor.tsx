@@ -40,7 +40,13 @@ const CellEditor = () => {
         return cellData.value;
       }
 
-      return cellData?.result;
+      if (typeof cellData?.result === 'object') {
+        // @ts-expect-error
+        // eslint-disable-next-line
+        return cellData?.result._error;
+      }
+
+      return cellData?.result.toString();
     }
 
     return cellData.value;
@@ -71,7 +77,7 @@ const CellEditor = () => {
         }
       }}
       onInput={(e) => {
-        const cellContent = e.currentTarget.textContent?.trim() || '';
+        const cellContent = e.currentTarget.textContent || '';
 
         if (cellContent.startsWith('=')) {
           setIsSelectingCellsForFormula(true);
@@ -128,19 +134,22 @@ const CellEditor = () => {
               cellData?.value || ''
             );
 
+            console.log('formula result', formulaResult);
+
             if (evaluatedFormula && formulaResult) {
               // Since the Cell is memoized, it doesn't re-render
               //  when the formulaResult is the same.
               // Temporarily, we set the cellRef textContent
               //  manually.
               // cellRef.current!.textContent = formulaResult;
+            } else {
+              setCellData(activeRow, activeColumn, {
+                value: cellContent,
+              });
             }
 
             emptyFormulaCellSelectionPoints();
             setActiveCell(activeRow + 1, activeColumn);
-            setCellData(activeRow, activeColumn, {
-              value: cellContent,
-            });
 
             break;
           }

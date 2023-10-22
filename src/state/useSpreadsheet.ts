@@ -247,7 +247,7 @@ const useSpreadsheet = create<SpreadsheetState>()(
             borderColor,
           };
 
-          data[activeRow][activeColumn].value = `=${cellAddress}`;
+          data[activeRow][activeColumn].value += `${cellAddress}`;
           data[activeRow][activeColumn].formulaEntities.push(formulaEntity);
 
           const inFormulaCellSelections: FormulaCellSelection[] = [

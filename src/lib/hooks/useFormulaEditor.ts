@@ -64,11 +64,9 @@ const useFormulaEditor = () => {
     if (cellContent?.startsWith('=')) {
       const formulaResult = formulaParser.parse(cellContent.substring(1));
 
-      if (formulaResult !== '#VALUE!') {
-        setCellData(activeCellRow, activeCellColumn, {
-          result: formulaResult,
-        });
-      }
+      setCellData(activeCellRow, activeCellColumn, {
+        result: formulaResult,
+      });
 
       return {
         evaluatedFormula: true,
