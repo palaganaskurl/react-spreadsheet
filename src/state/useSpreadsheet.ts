@@ -389,14 +389,13 @@ const useSpreadsheet = create<SpreadsheetState>()(
       },
       writeMethod: 'overwrite',
       setWriteMethod: (writeMethod: 'overwrite' | 'append') => {
-        console.log('setting write method', writeMethod);
         set({
           writeMethod,
         });
       },
     }),
     {
-      skipHydration: true,
+      // skipHydration: true,
       name: 'react-spreadsheet-storage',
       storage: createJSONStorage(() => sessionStorage),
       partialize: (state) =>

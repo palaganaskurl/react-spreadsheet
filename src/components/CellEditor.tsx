@@ -30,6 +30,22 @@ const CellEditor = () => {
     placeCaretAtEnd(inputBoxRef.current);
   }, [cellData]);
 
+  if (cellData === null) {
+    return null;
+  }
+
+  const getCellValue = () => {
+    if (writeMethod === 'overwrite') {
+      if (!cellData?.result) {
+        return cellData.value;
+      }
+
+      return cellData?.result;
+    }
+
+    return cellData.value;
+  };
+
   return (
     <div
       role="textbox"
@@ -40,7 +56,10 @@ const CellEditor = () => {
       style={{
         width: '100%',
         height: '100%',
-        outline: '0px solid transparent',
+        outline:
+          writeMethod === 'overwrite'
+            ? '0px solid transparent'
+            : '2px solid lightblue',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -143,7 +162,7 @@ const CellEditor = () => {
         }
       }}
     >
-      {cellData?.value}
+      {getCellValue()}
     </div>
   );
 };

@@ -62,6 +62,7 @@ const Cell = ({
   const isCellActive = () => activeRow === row && activeColumn === column;
 
   const setWriteMethod = useSpreadsheet((state) => state.setWriteMethod);
+  const writeMethod = useSpreadsheet((state) => state.writeMethod);
 
   return (
     <div
@@ -99,7 +100,7 @@ const Cell = ({
       }}
       style={{
         ...CellStyle,
-        ...ActiveCellNoContent,
+        ...(writeMethod === 'overwrite' ? ActiveCellNoContent : {}),
         ...style,
       }}
       onMouseDown={() => {
