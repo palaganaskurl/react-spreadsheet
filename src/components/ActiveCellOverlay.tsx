@@ -123,9 +123,6 @@ const ActiveCellOverlay = () => {
           setCellFormulaDragRangeStart([activeRow, activeColumn]);
           setIsSelectingCellsForCellFormulaRange(true);
         }}
-        onMouseUp={() => {
-          setIsSelectingCellsForCellFormulaRange(false);
-        }}
       />
       {/* TODO: Try to remove this, and createPortal for this one and then memoized ActiveCellOverlay */}
       <CellEditor />

@@ -74,6 +74,9 @@ const Cell = ({ row, column, cell, style }: CellProps) => {
   const setCellFormulaDragRangeEnd = useSpreadsheet(
     (state) => state.setCellFormulaDragRangeEnd
   );
+  const setIsSelectingCellsForCellFormulaRange = useSpreadsheet(
+    (state) => state.setIsSelectingCellsForCellFormulaRange
+  );
 
   return (
     <div
@@ -128,6 +131,9 @@ const Cell = ({ row, column, cell, style }: CellProps) => {
           setActiveCell(row, column);
         }
       }}
+      onMouseUp={() => {
+        setIsSelectingCellsForCellFormulaRange(false);
+      }}
       onMouseMove={(e) => {
         if (!(e.target instanceof HTMLDivElement)) {
           return;
@@ -135,7 +141,11 @@ const Cell = ({ row, column, cell, style }: CellProps) => {
         // TODO: Don't initiate dragging when mouse didn't moved
         //  from starting cell.
         // TODO: Clean up this code.
-        if (!isSelectingCellsForFormula && e.buttons === 1) {
+        if (
+          !isSelectingCellsForFormula &&
+          !isSelectingCellsForCellFormulaRange &&
+          e.buttons === 1
+        ) {
           const targetRow = parseInt(e.target.dataset.row as string, 10);
           const targetColumn = parseInt(e.target.dataset.column as string, 10);
 

@@ -168,7 +168,6 @@ export function Spreadsheet() {
                   zIndex: 10,
                 }}
               >
-                {`Left: ${scrollLeft}, Top: ${scrollTop}`}
                 <Grid
                   ref={upperRightGridRef}
                   cellRenderer={renderLeftHeaderCell}

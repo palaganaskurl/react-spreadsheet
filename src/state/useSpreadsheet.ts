@@ -120,6 +120,7 @@ const useSpreadsheet = create<SpreadsheetState>()(
       setActiveCell: (row: number, column: number) => {
         set({
           activeCell: [row, column],
+          cellFormulaDragRangeSelection: null,
         });
         focusOnCell(row, column);
       },
@@ -460,8 +461,6 @@ const useSpreadsheet = create<SpreadsheetState>()(
 
         let width = 0;
         let height = 0;
-        let left = 0;
-        let top = 0;
 
         // TODO: I think that we can remove the other for loop here
         //  add checking of direction of drag, then just loop on that
@@ -470,8 +469,6 @@ const useSpreadsheet = create<SpreadsheetState>()(
             .querySelector(`[data-column="${i}"]`)
             ?.getBoundingClientRect();
           width += boundingClientRect?.width || 0;
-
-          left += 50;
         }
 
         for (let i = startCellRow; i <= endCellRow; i++) {
@@ -479,8 +476,6 @@ const useSpreadsheet = create<SpreadsheetState>()(
             .querySelector(`[data-row="${i}"]`)
             ?.getBoundingClientRect();
           height += boundingClientRect?.height || 0;
-
-          top += 50;
         }
 
         set({
@@ -488,8 +483,8 @@ const useSpreadsheet = create<SpreadsheetState>()(
             width,
             height,
             direction,
-            left,
-            top,
+            left: getNumberFromPXString(cellElement.style.left),
+            top: getNumberFromPXString(cellElement.style.top),
           },
           cellFormulaDragRangeEnd: point,
         });
