@@ -11,7 +11,11 @@ import {
 import { generateRandomColor } from '../lib/color';
 import { getCellAddressLabel } from '../lib/spreadsheet';
 import { getEntityCountByType } from '../lib/formula';
-import { focusOnCell, getCellContainer } from '../lib/dom';
+import {
+  focusOnCell,
+  getCellContainer,
+  getNumberFromPXString,
+} from '../lib/dom';
 import Cell from '../lib/cell';
 
 export interface SpreadsheetState {
@@ -181,8 +185,8 @@ const useSpreadsheet = create<SpreadsheetState>()(
 
         // TODO: Not sure if this is a good thing to do.
         //  The problem is I can't get the top and left from getBoundingClientRect
-        const top = parseInt(startCell.style.top.replace('px', ''), 10);
-        const left = parseInt(startCell.style.left.replace('px', ''), 10);
+        const top = getNumberFromPXString(startCell.style.top);
+        const left = getNumberFromPXString(startCell.style.left);
         let width = 0;
         let height = 0;
 

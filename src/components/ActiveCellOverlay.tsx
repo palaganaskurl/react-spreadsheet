@@ -1,10 +1,9 @@
 import React from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { createPortal } from 'react-dom';
 import { useSpreadsheet } from '../state/useSpreadsheet';
 import { SelectionOverlayStyle } from '../types';
 import { selectionBorderWidth } from '../constants';
-import { getCellContainer } from '../lib/dom';
+import { getCellContainer, getNumberFromPXString } from '../lib/dom';
 import CellEditor from './CellEditor';
 
 const ActiveCellOverlay = () => {
@@ -19,6 +18,11 @@ const ActiveCellOverlay = () => {
   const setIsSelectingCellsForCellFormulaRange = useSpreadsheet(
     (state) => state.setIsSelectingCellsForCellFormulaRange
   );
+  const gridContainer = document.querySelector('#gridContainer');
+
+  if (gridContainer === null) {
+    return null;
+  }
 
   if (!cellElement) {
     return null;
@@ -53,10 +57,11 @@ const ActiveCellOverlay = () => {
       style={{
         width: `${style.width}px`,
         height: `${style.height}px`,
+        top: `${getNumberFromPXString(cellElement.style.top)}px`,
+        left: `${getNumberFromPXString(cellElement.style.left)}px`,
         position: 'absolute',
         pointerEvents: 'none',
       }}
-      key={uuidv4()}
     >
       <div
         style={{
@@ -125,7 +130,7 @@ const ActiveCellOverlay = () => {
       {/* TODO: Try to remove this, and createPortal for this one and then memoized ActiveCellOverlay */}
       <CellEditor />
     </div>,
-    cellElement
+    gridContainer
   );
 };
 

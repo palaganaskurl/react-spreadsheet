@@ -274,12 +274,10 @@ export function Spreadsheet() {
                             zIndex: 10,
                           }}
                         />
-                        <CellFormulaDragOverlay />
                       </div>
                     </div>
                   )}
                 </AutoSizer>
-                <ActiveCellOverlay />
               </div>
             </div>
           )}
@@ -287,8 +285,10 @@ export function Spreadsheet() {
       </div>
       <RowContextMenu />
       <ColumnContextMenu />
+      <ActiveCellOverlay />
       <CellRangeSelectionOverlay />
       <FormulaCellSelectionOverlay />
+      <CellFormulaDragOverlay />
     </div>
   );
 }

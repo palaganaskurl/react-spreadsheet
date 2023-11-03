@@ -2,6 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { useSpreadsheet } from '../state/useSpreadsheet';
 import { selectionBorderWidth } from '../constants';
+import { getGridContainer } from '../lib/dom';
 
 const CellRangeSelectionOverlay = () => {
   const cellRangeSelection = useSpreadsheet(
@@ -12,7 +13,7 @@ const CellRangeSelectionOverlay = () => {
     pointerEvents: 'none',
   };
   const borderColor = '#0b57d0';
-  const gridContainer = document.querySelector('#gridContainer');
+  const gridContainer = getGridContainer();
 
   if (gridContainer === null) {
     return null;
