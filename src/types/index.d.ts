@@ -1,4 +1,5 @@
 import React from 'react';
+import Cell from '../lib/cell';
 
 export type ColumnData = {
   height: number;
@@ -22,7 +23,8 @@ export type CellData = {
   value: string;
 };
 
-export interface CellProps extends CellData {
+export interface CellProps {
+  cell: Cell;
   column: number;
   row: number;
   style: React.CSSProperties;
@@ -49,8 +51,6 @@ export interface ColumnContextMenuProps {
 export interface SelectionOverlayStyle {
   borderColor: string;
   height: number;
-  left: number;
-  top: number;
   width: number;
 }
 
@@ -61,6 +61,10 @@ export interface CellSelection {
   left: number;
   top: number;
   width: number;
+}
+
+export interface CellFormulaDragSelection extends CellSelection {
+  direction: 'left' | 'right' | 'top' | 'bottom' | '';
 }
 
 export interface FormulaCellSelection {

@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { useSpreadsheet } from '../state/useSpreadsheet';
 import { selectionBorderWidth } from '../constants';
 
@@ -11,12 +12,17 @@ const CellRangeSelectionOverlay = () => {
     pointerEvents: 'none',
   };
   const borderColor = '#0b57d0';
+  const gridContainer = document.querySelector('#gridContainer');
+
+  if (gridContainer === null) {
+    return null;
+  }
 
   if (cellRangeSelection === null) {
     return null;
   }
 
-  return (
+  return createPortal(
     <div
       id="selectionRangeOverlay"
       style={{
@@ -72,7 +78,8 @@ const CellRangeSelectionOverlay = () => {
           ...commonStyles,
         }}
       />
-    </div>
+    </div>,
+    gridContainer
   );
 };
 

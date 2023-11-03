@@ -14,11 +14,12 @@ import RowContextMenu from './RowContextMenu';
 import ColumnContextMenu from './ColumnContextMenu';
 import ColumnLabel from './ColumnLabel';
 import { getCellAddressLabel } from '../lib/spreadsheet';
-import CellRangeSelectionOverlay from './CellRangeSelectionOverlay';
 import FormulaEditor from './FormulaEditor';
 import FormulaCellSelectionOverlay from './FormulaCellSelectionOverlay';
 import ActiveCellOverlay from './ActiveCellOverlay';
 import RowLabel from './RowLabel';
+import CellFormulaDragOverlay from './CellFormulaDragOverlay';
+import CellRangeSelectionOverlay from './CellRangeSelectionOverlay';
 
 const FormulaBarStyle: React.CSSProperties = {
   display: 'flex',
@@ -75,7 +76,7 @@ export function Spreadsheet() {
         row={rowIndex}
         column={columnIndexMinusOne}
         style={style}
-        {...cell}
+        cell={cell}
         key={key}
       />
     );
@@ -145,9 +146,8 @@ export function Spreadsheet() {
         <FormulaEditor />
       </div>
       <div
-        id="gridContainer"
         style={{
-          zIndex: 5,
+          zIndex: 10,
         }}
       >
         <ScrollSync>
@@ -168,6 +168,7 @@ export function Spreadsheet() {
                   zIndex: 10,
                 }}
               >
+                {`Left: ${scrollLeft}, Top: ${scrollTop}`}
                 <Grid
                   ref={upperRightGridRef}
                   cellRenderer={renderLeftHeaderCell}
@@ -179,6 +180,7 @@ export function Spreadsheet() {
                   columnCount={1}
                   style={{
                     overflow: 'hidden',
+                    zIndex: 10,
                   }}
                 />
               </div>
@@ -200,6 +202,7 @@ export function Spreadsheet() {
                   columnCount={1}
                   style={{
                     overflow: 'hidden',
+                    zIndex: 10,
                   }}
                   height={height - scrollbarSize()}
                   rowHeight={DEFAULT_ROW_HEIGHT}
@@ -229,6 +232,7 @@ export function Spreadsheet() {
                           style={{
                             width: '100%',
                             overflow: 'hidden',
+                            zIndex: 10,
                           }}
                           columnWidth={({ index }) => getColumnWidth(index)}
                           columnCount={COLUMN_COUNT}
@@ -248,6 +252,7 @@ export function Spreadsheet() {
                         }}
                       >
                         <Grid
+                          id="gridContainer"
                           ref={cellsGridRef}
                           cellRenderer={cellRenderer}
                           columnWidth={({ index }) => getColumnWidth(index)}
@@ -266,8 +271,10 @@ export function Spreadsheet() {
                           }}
                           style={{
                             width: '100%',
+                            zIndex: 10,
                           }}
                         />
+                        <CellFormulaDragOverlay />
                       </div>
                     </div>
                   )}

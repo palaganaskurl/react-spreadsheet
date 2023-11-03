@@ -134,8 +134,6 @@ const CellEditor = () => {
               cellData?.value || ''
             );
 
-            console.log('formula result', formulaResult);
-
             if (evaluatedFormula && formulaResult) {
               // Since the Cell is memoized, it doesn't re-render
               //  when the formulaResult is the same.
@@ -150,6 +148,7 @@ const CellEditor = () => {
 
             emptyFormulaCellSelectionPoints();
             setActiveCell(activeRow + 1, activeColumn);
+            setWriteMethod('overwrite');
 
             break;
           }

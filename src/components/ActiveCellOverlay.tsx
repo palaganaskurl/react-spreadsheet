@@ -4,13 +4,21 @@ import { createPortal } from 'react-dom';
 import { useSpreadsheet } from '../state/useSpreadsheet';
 import { SelectionOverlayStyle } from '../types';
 import { selectionBorderWidth } from '../constants';
-import { getCellContainer, getGridContainer } from '../lib/dom';
+import { getCellContainer } from '../lib/dom';
 import CellEditor from './CellEditor';
 
 const ActiveCellOverlay = () => {
   const [activeRow, activeColumn] = useSpreadsheet((state) => state.activeCell);
   const cellElement = getCellContainer(activeRow, activeColumn);
-  const scrollData = useSpreadsheet((state) => state.scrollData);
+  const setCellFormulaDragRangeStart = useSpreadsheet(
+    (state) => state.setCellFormulaDragRangeStart
+  );
+  const setCellFormulaDragRangeEnd = useSpreadsheet(
+    (state) => state.setCellFormulaDragRangeEnd
+  );
+  const setIsSelectingCellsForCellFormulaRange = useSpreadsheet(
+    (state) => state.setIsSelectingCellsForCellFormulaRange
+  );
 
   if (!cellElement) {
     return null;
@@ -18,24 +26,11 @@ const ActiveCellOverlay = () => {
 
   const getOverlayStyles = (): SelectionOverlayStyle | null => {
     const cellElementBoundingClientRect = cellElement.getBoundingClientRect();
-    const gridContainerBoundingRect =
-      getGridContainer().getBoundingClientRect();
-
-    const top =
-      cellElementBoundingClientRect.top -
-      gridContainerBoundingRect.top -
-      scrollData.scrollTop;
-    const left =
-      cellElementBoundingClientRect.left -
-      gridContainerBoundingRect.left -
-      scrollData.scrollLeft;
 
     return {
       borderColor: '#0b57d0',
       width: cellElementBoundingClientRect.width,
       height: cellElementBoundingClientRect.height,
-      top,
-      left,
     };
   };
 
@@ -59,7 +54,7 @@ const ActiveCellOverlay = () => {
         width: `${style.width}px`,
         height: `${style.height}px`,
         position: 'absolute',
-        ...commonStyles,
+        pointerEvents: 'none',
       }}
       key={uuidv4()}
     >
@@ -101,6 +96,30 @@ const ActiveCellOverlay = () => {
           left: '0px',
           height: `${style.height}px`,
           ...commonStyles,
+        }}
+      />
+      <div
+        style={{
+          cursor: 'crosshair',
+          backgroundColor: '#0b57d0',
+          width: '6px',
+          height: '6px',
+          bottom: '-2px',
+          right: '-2px',
+          position: 'absolute',
+          zIndex: 20,
+          pointerEvents: 'all',
+        }}
+        tabIndex={0}
+        aria-label="Active Cell Overlay"
+        role="button"
+        onMouseDown={() => {
+          setCellFormulaDragRangeEnd(null);
+          setCellFormulaDragRangeStart([activeRow, activeColumn]);
+          setIsSelectingCellsForCellFormulaRange(true);
+        }}
+        onMouseUp={() => {
+          setIsSelectingCellsForCellFormulaRange(false);
         }}
       />
       {/* TODO: Try to remove this, and createPortal for this one and then memoized ActiveCellOverlay */}

@@ -10,19 +10,12 @@ const CellStyle: React.CSSProperties = {
   borderRight: 'thin solid #e0e0e0',
   outline: '0px solid transparent',
 };
-const ActiveCellNoContent = {
+const ActiveCellNoContent: React.CSSProperties = {
   caretColor: 'transparent', // TODO: Culprit for the cursor not showing
   cursor: 'default',
 };
 
-const Cell = ({
-  row,
-  column,
-  value,
-  result,
-  formulaEntities,
-  style,
-}: CellProps) => {
+const Cell = ({ row, column, cell, style }: CellProps) => {
   const setActiveCell = useSpreadsheet((state) => state.setActiveCell);
   const [activeRow, activeColumn] = useSpreadsheet((state) => state.activeCell);
   const isSelectingCellsForFormula = useSpreadsheet(
@@ -37,16 +30,16 @@ const Cell = ({
       activeRow === row &&
       activeColumn === column
     ) {
-      return value;
+      return cell.value;
     }
 
-    if (typeof result === 'object') {
+    if (typeof cell.result === 'object') {
       // @ts-expect-error
       // eslint-disable-next-line
       return result._error;
     }
 
-    return result?.toString() || value;
+    return cell.result?.toString() || cell.value;
   };
 
   const setCellRangeStart = useSpreadsheet((state) => state.setCellRangeStart);
@@ -74,6 +67,14 @@ const Cell = ({
   const setWriteMethod = useSpreadsheet((state) => state.setWriteMethod);
   const writeMethod = useSpreadsheet((state) => state.writeMethod);
 
+  const isSelectingCellsForCellFormulaRange = useSpreadsheet(
+    (state) => state.isSelectingCellsForCellFormulaRange
+  );
+
+  const setCellFormulaDragRangeEnd = useSpreadsheet(
+    (state) => state.setCellFormulaDragRangeEnd
+  );
+
   return (
     <div
       onKeyDown={() => {}}
@@ -99,7 +100,7 @@ const Cell = ({
           case 2: {
             setActiveCellConditionally();
             setWriteMethod('append');
-            setFormulaCellSelectionPoints(formulaEntities);
+            setFormulaCellSelectionPoints(cell.formulaEntities);
 
             break;
           }
@@ -112,6 +113,9 @@ const Cell = ({
         ...CellStyle,
         ...(writeMethod === 'overwrite' ? ActiveCellNoContent : {}),
         ...style,
+        // ...(isStyleForSelectingCellsForCellFormulaRange()
+        //   ? SelectingCellsForFormulaRangeStyle
+        //   : {}),
       }}
       onMouseDown={() => {
         setCellRangeEnd(null);
@@ -125,17 +129,28 @@ const Cell = ({
         }
       }}
       onMouseMove={(e) => {
+        if (!(e.target instanceof HTMLDivElement)) {
+          return;
+        }
         // TODO: Don't initiate dragging when mouse didn't moved
         //  from starting cell.
+        // TODO: Clean up this code.
+        if (!isSelectingCellsForFormula && e.buttons === 1) {
+          const targetRow = parseInt(e.target.dataset.row as string, 10);
+          const targetColumn = parseInt(e.target.dataset.column as string, 10);
+
+          setCellRangeEnd([targetRow, targetColumn]);
+        }
+
         if (
           !isSelectingCellsForFormula &&
-          e.target instanceof HTMLDivElement &&
+          isSelectingCellsForCellFormulaRange &&
           e.buttons === 1
         ) {
           const targetRow = parseInt(e.target.dataset.row as string, 10);
           const targetColumn = parseInt(e.target.dataset.column as string, 10);
 
-          setCellRangeEnd([targetRow, targetColumn]);
+          setCellFormulaDragRangeEnd([targetRow, targetColumn]);
         }
       }}
     >

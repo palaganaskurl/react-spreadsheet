@@ -20,17 +20,6 @@ export const focusOnCell = (row: number, column: number) => {
   }
 };
 
-export const getGridContainer = (): HTMLDivElement => {
-  const gridContainer =
-    document.querySelector<HTMLDivElement>('#gridContainer');
-
-  if (gridContainer === null) {
-    throw new Error('Grid container does not exist');
-  }
-
-  return gridContainer;
-};
-
 export const getCellContainer = (
   row: number,
   column: number

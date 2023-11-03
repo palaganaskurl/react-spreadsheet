@@ -1,8 +1,7 @@
 import { create } from 'zustand';
-import { v4 as uuidv4 } from 'uuid';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import {
-  CellData,
+  CellFormulaDragSelection,
   CellSelection,
   FormulaCellSelection,
   FormulaEntity,
@@ -12,42 +11,49 @@ import {
 import { generateRandomColor } from '../lib/color';
 import { getCellAddressLabel } from '../lib/spreadsheet';
 import { getEntityCountByType } from '../lib/formula';
-import { focusOnCell } from '../lib/dom';
+import { focusOnCell, getCellContainer } from '../lib/dom';
+import Cell from '../lib/cell';
 
 export interface SpreadsheetState {
   activeCell: [number, number];
+  cellFormulaDragRangeEnd: Point | null;
+  cellFormulaDragRangeSelection: CellFormulaDragSelection | null;
+  cellFormulaDragRangeStart: Point | null;
   cellRangeEnd: Point | null;
   cellRangeSelection: CellSelection | null;
   cellRangeStart: Point | null;
   columnWidths: Record<number, number>;
-  data: CellData[][];
+  data: Cell[][];
   emptyFormulaCellSelectionPoints: () => void;
   formulaCellSelections: FormulaCellSelection[];
-  getCell: (row: number, column: number) => CellData | null;
+  getCell: (row: number, column: number) => Cell | null;
   getColumnWidth: (columnIndex: number) => number;
-  getMatrixValues: () => Array<CellData['value'][]>;
+  getMatrixValues: () => Array<Cell['value'][]>;
   insertNewColumnAt: (column: number, where: 'before' | 'after') => void;
   insertNewRowAt: (row: number, where: 'before' | 'after') => void;
   isEditingAtFormulaEditor: boolean;
+  isSelectingCellsForCellFormulaRange: boolean;
   isSelectingCellsForFormula: boolean;
   scrollData: ScrollData;
   setActiveCell: (row: number, column: number) => void;
-  setCellData: (
-    row: number,
-    column: number,
-    updateData: Partial<CellData>
-  ) => void;
+  setCellData: (row: number, column: number, updateData: Partial<Cell>) => void;
+  setCellFormulaDragRangeEnd: (point: Point | null) => void;
+  setCellFormulaDragRangeStart: (point: Point | null) => void;
   setCellRangeEnd: (point: Point | null) => void;
   setCellRangeStart: (point: Point | null) => void;
   setColumnWidth: (columnIndex: number, width: number) => void;
-  setData: (data: CellData[][]) => void;
+  setData: (data: Cell[][]) => void;
   setFormulaCellSelectionPoints: (
-    formulaEntities: CellData['formulaEntities']
+    formulaEntities: Cell['formulaEntities']
   ) => void;
+
   setFormulaEntitiesFromCellSelection: (
     formulaCellSelectionPoint: Point
   ) => void;
   setIsEditingAtFormulaEditor: (isEditingAtFormulaEditor: boolean) => void;
+  setIsSelectingCellsForCellFormulaRange: (
+    isSelectingCellsForCellFormulaRange: boolean
+  ) => void;
   setIsSelectingCellsForFormula: (isSelectingCellsForFormula: boolean) => void;
   setScrollData: (scrollData: ScrollData) => void;
   setWriteMethod: (writeMethod: 'overwrite' | 'append') => void;
@@ -70,17 +76,13 @@ const generateInitialColumnWidths = () => {
 };
 
 const generateInitialData = () => {
-  const initialRowData: CellData[][] = [];
+  const initialRowData: Cell[][] = [];
 
   for (let i = 0; i < ROW_COUNT; i++) {
     initialRowData.push([]);
 
     for (let j = 0; j < COLUMN_COUNT; j++) {
-      initialRowData[i].push({
-        id: uuidv4(),
-        value: '',
-        formulaEntities: [],
-      });
+      initialRowData[i].push(new Cell());
     }
   }
 
@@ -96,7 +98,10 @@ const useSpreadsheet = create<SpreadsheetState>()(
       cellRangeEnd: null,
       cellRangeStart: null,
       cellRangeSelection: null,
-      setData: (data: CellData[][]) => {
+      cellFormulaDragRangeEnd: null,
+      cellFormulaDragRangeStart: null,
+      cellFormulaDragRangeSelection: null,
+      setData: (data: Cell[][]) => {
         set({ data });
       },
       getCell: (row: number, column: number) => {
@@ -116,8 +121,8 @@ const useSpreadsheet = create<SpreadsheetState>()(
       },
       insertNewRowAt: (row: number, where: 'before' | 'after') => {
         const { data } = get();
-        const rowIndex = where === 'before' ? row : row + 1;
-        const newUUIDs: CellData[] = [];
+        const rowIndex = where === 'before' ? row - 1 : row;
+        const newUUIDs: Cell[] = [];
 
         data.splice(rowIndex, 0, newUUIDs);
 
@@ -127,14 +132,10 @@ const useSpreadsheet = create<SpreadsheetState>()(
       },
       insertNewColumnAt: (column: number, where: 'before' | 'after') => {
         const { data } = get();
-        const columnIndex = where === 'before' ? column : column + 1;
+        const columnIndex = where === 'before' ? column - 1 : column;
 
         for (let i = 0; i < data.length; i++) {
-          data[i].splice(columnIndex, 0, {
-            id: uuidv4(),
-            value: '',
-            formulaEntities: [],
-          });
+          data[i].splice(columnIndex, 0, new Cell());
         }
 
         set({
@@ -172,25 +173,31 @@ const useSpreadsheet = create<SpreadsheetState>()(
         const endCellCol = Math.max(startCol, endCol);
         const endCellRow = Math.max(startRow, endRow);
 
-        const startBoundingClientRect = document
-          .querySelector(
-            `[data-row="${startCellRow}"][data-column="${startCellCol}"]`
-          )
-          ?.getBoundingClientRect();
+        const startCell = getCellContainer(startCellRow, startCellCol);
 
+        if (startCell === null) {
+          return;
+        }
+
+        // TODO: Not sure if this is a good thing to do.
+        //  The problem is I can't get the top and left from getBoundingClientRect
+        const top = parseInt(startCell.style.top.replace('px', ''), 10);
+        const left = parseInt(startCell.style.left.replace('px', ''), 10);
         let width = 0;
         let height = 0;
 
-        for (let i = startCellCol; i <= endCellCol; i++) {
+        // TODO: There might be some issue here,
+        //  Try resizing some column then do cell range selection.
+        for (let col = startCellCol; col <= endCellCol; col++) {
           const boundingClientRect = document
-            .querySelector(`[data-column="${i}"]`)
+            .querySelector(`[data-column="${col}"]`)
             ?.getBoundingClientRect();
           width += boundingClientRect?.width || 0;
         }
 
-        for (let i = startCellRow; i <= endCellRow; i++) {
+        for (let row = startCellRow; row <= endCellRow; row++) {
           const boundingClientRect = document
-            .querySelector(`[data-row="${i}"]`)
+            .querySelector(`[data-row="${row}"]`)
             ?.getBoundingClientRect();
           height += boundingClientRect?.height || 0;
         }
@@ -198,8 +205,8 @@ const useSpreadsheet = create<SpreadsheetState>()(
         set({
           cellRangeSelection: {
             width,
-            top: (startBoundingClientRect?.y || 0) + window.scrollY,
-            left: (startBoundingClientRect?.x || 0) + window.scrollX,
+            top,
+            left,
             height,
           },
           cellRangeEnd: point,
@@ -321,11 +328,7 @@ const useSpreadsheet = create<SpreadsheetState>()(
           });
         }
       },
-      setCellData: (
-        row: number,
-        column: number,
-        updateData: Partial<CellData>
-      ) => {
+      setCellData: (row: number, column: number, updateData: Partial<Cell>) => {
         const { data } = get();
 
         data[row][column] = {
@@ -335,13 +338,13 @@ const useSpreadsheet = create<SpreadsheetState>()(
 
         if (data[row][column].value.trim() === '') {
           data[row][column].formulaEntities = [];
-          data[row][column].result = undefined;
+          data[row][column].result = '';
         }
 
         set({ data: [...data] });
       },
       setFormulaCellSelectionPoints: (
-        formulaEntities: CellData['formulaEntities']
+        formulaEntities: Cell['formulaEntities']
       ) => {
         const formulaCellSelections = new Set<FormulaCellSelection>();
 
@@ -393,6 +396,113 @@ const useSpreadsheet = create<SpreadsheetState>()(
           writeMethod,
         });
       },
+      setCellFormulaDragRangeEnd: (point: Point | null) => {
+        if (point === null) {
+          set({
+            cellFormulaDragRangeSelection: null,
+            cellFormulaDragRangeStart: null,
+            cellFormulaDragRangeEnd: null,
+          });
+          return;
+        }
+
+        const { cellFormulaDragRangeStart } = get();
+
+        if (cellFormulaDragRangeStart === null) {
+          return;
+        }
+
+        const [startRow, startCol] = cellFormulaDragRangeStart;
+        const [endRow, endCol] = point;
+
+        // Only process if dragging is in straight line
+        if (
+          Math.abs(endRow - startRow) >= 1 &&
+          Math.abs(endCol - startCol) >= 1
+        ) {
+          return;
+        }
+
+        let startCellCol = Math.min(startCol, endCol);
+        let startCellRow = Math.min(startRow, endRow);
+        let endCellCol = Math.max(startCol, endCol);
+        let endCellRow = Math.max(startRow, endRow);
+
+        const line = startCellCol === endCellCol ? 'column' : 'row';
+        let direction: CellFormulaDragSelection['direction'] = '';
+
+        // This is kinda ugly but I just fixed the no-lonely-if eslint issue.
+        if (line === 'row') {
+          if (startCol >= endCol) {
+            endCellCol -= 1;
+            direction = 'left';
+          } else {
+            startCellCol += 1;
+            direction = 'right';
+          }
+        } else if (startRow >= endRow) {
+          endCellRow -= 1;
+          direction = 'top';
+        } else {
+          startCellRow += 1;
+          direction = 'bottom';
+        }
+
+        const cellElement = getCellContainer(startCellRow, startCellCol);
+
+        if (cellElement === null) {
+          return;
+        }
+
+        let width = 0;
+        let height = 0;
+        let left = 0;
+        let top = 0;
+
+        // TODO: I think that we can remove the other for loop here
+        //  add checking of direction of drag, then just loop on that
+        for (let i = startCellCol; i <= endCellCol; i++) {
+          const boundingClientRect = document
+            .querySelector(`[data-column="${i}"]`)
+            ?.getBoundingClientRect();
+          width += boundingClientRect?.width || 0;
+
+          left += 50;
+        }
+
+        for (let i = startCellRow; i <= endCellRow; i++) {
+          const boundingClientRect = document
+            .querySelector(`[data-row="${i}"]`)
+            ?.getBoundingClientRect();
+          height += boundingClientRect?.height || 0;
+
+          top += 50;
+        }
+
+        set({
+          cellFormulaDragRangeSelection: {
+            width,
+            height,
+            direction,
+            left,
+            top,
+          },
+          cellFormulaDragRangeEnd: point,
+        });
+      },
+      setCellFormulaDragRangeStart: (point: Point | null) => {
+        set({
+          cellFormulaDragRangeStart: point,
+        });
+      },
+      isSelectingCellsForCellFormulaRange: false,
+      setIsSelectingCellsForCellFormulaRange: (
+        isSelectingCellsForCellFormulaRange: boolean
+      ) => {
+        set({
+          isSelectingCellsForCellFormulaRange,
+        });
+      },
     }),
     {
       // skipHydration: true,
@@ -409,6 +519,10 @@ const useSpreadsheet = create<SpreadsheetState>()(
                 'cellRangeSelection',
                 'cellRangeStart',
                 'formulaCellSelections',
+                'cellFormulaDragRangeEnd',
+                'cellFormulaDragRangeSelection',
+                'cellFormulaDragRangeStart',
+                'isSelectingCellsForCellFormulaRange',
               ].includes(key)
           )
         ),
