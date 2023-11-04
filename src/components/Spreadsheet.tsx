@@ -96,8 +96,6 @@ export function Spreadsheet() {
     cellsGridRef.current!.recomputeGridSize();
   }, [columnWidths]);
 
-  const setScrollData = useSpreadsheet((state) => state.setScrollData);
-
   const height = 300;
 
   const overscanColumnCount = 0;
@@ -261,14 +259,7 @@ export function Spreadsheet() {
                           rowHeight={DEFAULT_ROW_HEIGHT}
                           rowCount={spreadsheetData.length}
                           width={width}
-                          onScroll={(params) => {
-                            onScroll(params);
-
-                            setScrollData({
-                              scrollTop: params.scrollTop,
-                              scrollLeft: params.scrollLeft,
-                            });
-                          }}
+                          onScroll={onScroll}
                           style={{
                             width: '100%',
                             zIndex: 10,

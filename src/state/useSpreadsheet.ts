@@ -6,7 +6,6 @@ import {
   FormulaCellSelection,
   FormulaEntity,
   Point,
-  ScrollData,
 } from '../types';
 import { generateRandomColor } from '../lib/color';
 import { getCellAddressLabel } from '../lib/spreadsheet';
@@ -39,7 +38,6 @@ export interface SpreadsheetState {
   isEditingAtFormulaEditor: boolean;
   isSelectingCellsForCellFormulaRange: boolean;
   isSelectingCellsForFormula: boolean;
-  scrollData: ScrollData;
   setActiveCell: (row: number, column: number) => void;
   setCellData: (row: number, column: number, updateData: Partial<Cell>) => void;
   setCellFormulaDragRangeEnd: (point: Point | null) => void;
@@ -59,7 +57,6 @@ export interface SpreadsheetState {
     isSelectingCellsForCellFormulaRange: boolean
   ) => void;
   setIsSelectingCellsForFormula: (isSelectingCellsForFormula: boolean) => void;
-  setScrollData: (scrollData: ScrollData) => void;
   setWriteMethod: (writeMethod: 'overwrite' | 'append') => void;
   writeMethod: 'overwrite' | 'append';
 }
@@ -387,13 +384,6 @@ const useSpreadsheet = create<SpreadsheetState>()(
         const { columnWidths } = get();
 
         return columnWidths[columnIndex];
-      },
-      scrollData: {
-        scrollTop: 0,
-        scrollLeft: 0,
-      },
-      setScrollData: (scrollData: ScrollData) => {
-        set({ scrollData });
       },
       writeMethod: 'overwrite',
       setWriteMethod: (writeMethod: 'overwrite' | 'append') => {

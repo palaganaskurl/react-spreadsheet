@@ -71,8 +71,3 @@ export interface FormulaCellSelection {
   borderColor: string;
   point: Point;
 }
-
-export interface ScrollData {
-  scrollLeft: number;
-  scrollTop: number;
-}
