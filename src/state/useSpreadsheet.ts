@@ -29,6 +29,7 @@ export interface SpreadsheetState {
   columnWidths: Record<number, number>;
   data: Cell[][];
   emptyFormulaCellSelectionPoints: () => void;
+  finishSelectingCellsForFormula: () => void;
   formulaCellSelections: FormulaCellSelection[];
   getCell: (row: number, column: number) => Cell | null;
   getColumnWidth: (columnIndex: number) => number;
@@ -50,7 +51,6 @@ export interface SpreadsheetState {
   setFormulaCellSelectionPoints: (
     formulaEntities: Cell['formulaEntities']
   ) => void;
-
   setFormulaEntitiesFromCellSelection: (
     formulaCellSelectionPoint: Point
   ) => void;
@@ -500,6 +500,23 @@ const useSpreadsheet = create<SpreadsheetState>()(
       ) => {
         set({
           isSelectingCellsForCellFormulaRange,
+        });
+      },
+      finishSelectingCellsForFormula: () => {
+        const {
+          cellFormulaDragRangeSelection,
+          cellFormulaDragRangeStart,
+          cellFormulaDragRangeEnd,
+        } = get();
+
+        set({
+          isSelectingCellsForCellFormulaRange: false,
+          cellRangeStart: cellFormulaDragRangeStart,
+          cellRangeEnd: cellFormulaDragRangeEnd,
+          cellRangeSelection: cellFormulaDragRangeSelection,
+          cellFormulaDragRangeStart: null,
+          cellFormulaDragRangeEnd: null,
+          cellFormulaDragRangeSelection: null,
         });
       },
     }),

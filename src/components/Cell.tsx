@@ -74,8 +74,8 @@ const Cell = ({ row, column, cell, style }: CellProps) => {
   const setCellFormulaDragRangeEnd = useSpreadsheet(
     (state) => state.setCellFormulaDragRangeEnd
   );
-  const setIsSelectingCellsForCellFormulaRange = useSpreadsheet(
-    (state) => state.setIsSelectingCellsForCellFormulaRange
+  const finishSelectingCellsForFormula = useSpreadsheet(
+    (state) => state.finishSelectingCellsForFormula
   );
 
   return (
@@ -116,9 +116,6 @@ const Cell = ({ row, column, cell, style }: CellProps) => {
         ...CellStyle,
         ...(writeMethod === 'overwrite' ? ActiveCellNoContent : {}),
         ...style,
-        // ...(isStyleForSelectingCellsForCellFormulaRange()
-        //   ? SelectingCellsForFormulaRangeStyle
-        //   : {}),
       }}
       onMouseDown={() => {
         setCellRangeEnd(null);
@@ -132,7 +129,9 @@ const Cell = ({ row, column, cell, style }: CellProps) => {
         }
       }}
       onMouseUp={() => {
-        setIsSelectingCellsForCellFormulaRange(false);
+        if (isSelectingCellsForCellFormulaRange) {
+          finishSelectingCellsForFormula();
+        }
       }}
       onMouseMove={(e) => {
         if (!(e.target instanceof HTMLDivElement)) {
@@ -164,15 +163,7 @@ const Cell = ({ row, column, cell, style }: CellProps) => {
         }
       }}
     >
-      {/* TODO: This is kinda hacky, check other way to fixed the double text issue. */}
-      <span
-        style={{
-          color: isCellActive() ? 'transparent' : 'black',
-          userSelect: isCellActive() ? 'none' : 'all',
-        }}
-      >
-        {getCellContent()}
-      </span>
+      {isCellActive() ? null : getCellContent()}
     </div>
   );
 };
