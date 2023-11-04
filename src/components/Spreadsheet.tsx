@@ -126,18 +126,6 @@ export function Spreadsheet() {
     />
   );
 
-  const activeCell = useSpreadsheet((state) => state.activeCell);
-
-  React.useEffect(() => {
-    const inputBox = document.querySelector<HTMLDivElement>('#inputBox');
-
-    if (inputBox === null) {
-      return;
-    }
-
-    inputBox.focus();
-  }, [activeCell]);
-
   return (
     <div className="Spreadsheet">
       <div style={FormulaBarStyle}>

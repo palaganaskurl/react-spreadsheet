@@ -3,3 +3,5 @@ export const ColumnContextMenuID = 'ColumnContextMenuID';
 
 // Selection Overlays
 export const selectionBorderWidth = 2;
+
+export const OverlayZIndex = 110;

@@ -4,6 +4,7 @@ import useFormulaEditor from '../lib/hooks/useFormulaEditor';
 import { useSpreadsheet } from '../state/useSpreadsheet';
 import {
   getCellContainer,
+  getGridContainer,
   getNumberFromPXString,
   placeCaretAtEnd,
 } from '../lib/dom';
@@ -11,7 +12,6 @@ import {
 const CellEditor = () => {
   // TODO: When write method is "append", make the cursor
   const [activeRow, activeColumn] = useSpreadsheet((state) => state.activeCell);
-  const activeCellElement = getCellContainer(activeRow, activeColumn);
   const writeMethod = useSpreadsheet((state) => state.writeMethod);
   const setWriteMethod = useSpreadsheet((state) => state.setWriteMethod);
   const setCellData = useSpreadsheet((state) => state.setCellData);
@@ -25,31 +25,30 @@ const CellEditor = () => {
     (state) => state.emptyFormulaCellSelectionPoints
   );
   const { resolveFormula, parseFormula } = useFormulaEditor();
-  const gridContainer = document.querySelector('#gridContainer');
-
+  const gridContainer = getGridContainer();
   const inputBoxRef = React.useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
-    if (inputBoxRef.current === null) {
-      return;
+  const [editorPosition, setEditorPosition] =
+    React.useState<React.CSSProperties>({});
+
+  const getStyleOnWriteMethod = React.useCallback((): React.CSSProperties => {
+    if (writeMethod === 'append') {
+      return {
+        outline: '2px solid #a8c7fa',
+      };
     }
 
-    placeCaretAtEnd(inputBoxRef.current);
-  }, [cellData]);
+    return {
+      outline: '0px solid #a8c7fa',
+      caretColor: 'transparent',
+    };
+  }, [writeMethod]);
 
-  if (activeCellElement === null) {
-    return null;
-  }
+  const getCellValue = React.useCallback(() => {
+    if (cellData === null) {
+      return null;
+    }
 
-  if (gridContainer === null) {
-    return null;
-  }
-
-  if (cellData === null) {
-    return null;
-  }
-
-  const getCellValue = () => {
     if (writeMethod === 'overwrite') {
       if (!cellData?.result) {
         return cellData.value;
@@ -65,10 +64,45 @@ const CellEditor = () => {
     }
 
     return cellData.value;
-  };
+  }, [cellData, writeMethod]);
 
-  const cellElementBoundingClientRect =
-    activeCellElement.getBoundingClientRect();
+  React.useEffect(() => {
+    const activeCellElementIn = getCellContainer(activeRow, activeColumn);
+
+    if (activeCellElementIn === null) {
+      return;
+    }
+
+    const cellElementBoundingClientRect =
+      activeCellElementIn.getBoundingClientRect();
+
+    setEditorPosition({
+      width: `${cellElementBoundingClientRect.width}px`,
+      height: `${cellElementBoundingClientRect.height}px`,
+      top: `${getNumberFromPXString(activeCellElementIn.style.top)}px`,
+      left: `${getNumberFromPXString(activeCellElementIn.style.left)}px`,
+    });
+  }, [activeRow, activeColumn]);
+
+  React.useEffect(() => {
+    if (inputBoxRef.current === null) {
+      return;
+    }
+
+    if (writeMethod === 'append') {
+      placeCaretAtEnd(inputBoxRef.current);
+    } else {
+      inputBoxRef.current.focus();
+    }
+  }, [editorPosition]);
+
+  if (gridContainer === null) {
+    return null;
+  }
+
+  if (cellData === null) {
+    return null;
+  }
 
   return createPortal(
     <div
@@ -78,19 +112,15 @@ const CellEditor = () => {
       id="inputBox"
       contentEditable
       style={{
-        width: `${cellElementBoundingClientRect.width}px`,
-        height: `${cellElementBoundingClientRect.height}px`,
-        top: `${getNumberFromPXString(activeCellElement.style.top)}px`,
-        left: `${getNumberFromPXString(activeCellElement.style.left)}px`,
+        zIndex: 120,
         position: 'absolute',
-        pointerEvents: 'none',
-        outline:
-          writeMethod === 'overwrite'
-            ? '0px solid transparent'
-            : '2px solid lightblue',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
+        // cursor: 'default',
+        pointerEvents: 'none',
+        ...getStyleOnWriteMethod(),
+        ...editorPosition,
       }}
       suppressContentEditableWarning
       onBeforeInput={(e) => {

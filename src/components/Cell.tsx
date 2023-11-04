@@ -1,6 +1,7 @@
 import React from 'react';
 import { CellProps } from '../types';
 import { useSpreadsheet } from '../state/useSpreadsheet';
+import { OverlayZIndex } from '../constants';
 
 const CellStyle: React.CSSProperties = {
   display: 'flex',
@@ -9,10 +10,9 @@ const CellStyle: React.CSSProperties = {
   borderBottom: 'thin solid #e0e0e0',
   borderRight: 'thin solid #e0e0e0',
   outline: '0px solid transparent',
-};
-const ActiveCellNoContent: React.CSSProperties = {
-  caretColor: 'transparent', // TODO: Culprit for the cursor not showing
   cursor: 'default',
+  zIndex: OverlayZIndex,
+  pointerEvents: 'auto',
 };
 
 const Cell = ({ row, column, cell, style }: CellProps) => {
@@ -65,7 +65,6 @@ const Cell = ({ row, column, cell, style }: CellProps) => {
   const isCellActive = () => activeRow === row && activeColumn === column;
 
   const setWriteMethod = useSpreadsheet((state) => state.setWriteMethod);
-  const writeMethod = useSpreadsheet((state) => state.writeMethod);
 
   const isSelectingCellsForCellFormulaRange = useSpreadsheet(
     (state) => state.isSelectingCellsForCellFormulaRange
@@ -114,7 +113,6 @@ const Cell = ({ row, column, cell, style }: CellProps) => {
       }}
       style={{
         ...CellStyle,
-        ...(writeMethod === 'overwrite' ? ActiveCellNoContent : {}),
         ...style,
       }}
       onMouseDown={() => {
@@ -137,6 +135,7 @@ const Cell = ({ row, column, cell, style }: CellProps) => {
         if (!(e.target instanceof HTMLDivElement)) {
           return;
         }
+
         // TODO: Don't initiate dragging when mouse didn't moved
         //  from starting cell.
         // TODO: Clean up this code.

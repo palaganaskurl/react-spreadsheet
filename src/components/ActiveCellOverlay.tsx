@@ -2,8 +2,12 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { useSpreadsheet } from '../state/useSpreadsheet';
 import { SelectionOverlayStyle } from '../types';
-import { selectionBorderWidth } from '../constants';
-import { getCellContainer, getNumberFromPXString } from '../lib/dom';
+import { OverlayZIndex, selectionBorderWidth } from '../constants';
+import {
+  getCellContainer,
+  getGridContainer,
+  getNumberFromPXString,
+} from '../lib/dom';
 
 const ActiveCellOverlay = () => {
   const [activeRow, activeColumn] = useSpreadsheet((state) => state.activeCell);
@@ -17,7 +21,22 @@ const ActiveCellOverlay = () => {
   const setIsSelectingCellsForCellFormulaRange = useSpreadsheet(
     (state) => state.setIsSelectingCellsForCellFormulaRange
   );
-  const gridContainer = document.querySelector('#gridContainer');
+  const gridContainer = getGridContainer();
+
+  const getOverlayStyles =
+    React.useCallback((): SelectionOverlayStyle | null => {
+      if (cellElement === null) {
+        return null;
+      }
+
+      const cellElementBoundingClientRect = cellElement.getBoundingClientRect();
+
+      return {
+        borderColor: '#0b57d0',
+        width: cellElementBoundingClientRect.width,
+        height: cellElementBoundingClientRect.height,
+      };
+    }, [cellElement]);
 
   if (gridContainer === null) {
     return null;
@@ -27,19 +46,11 @@ const ActiveCellOverlay = () => {
     return null;
   }
 
-  const getOverlayStyles = (): SelectionOverlayStyle | null => {
-    const cellElementBoundingClientRect = cellElement.getBoundingClientRect();
-
-    return {
-      borderColor: '#0b57d0',
-      width: cellElementBoundingClientRect.width,
-      height: cellElementBoundingClientRect.height,
-    };
-  };
-
   const commonStyles: React.CSSProperties = {
     position: 'absolute',
     pointerEvents: 'none',
+    userSelect: 'none',
+    zIndex: OverlayZIndex,
   };
 
   const style = getOverlayStyles();
@@ -60,6 +71,8 @@ const ActiveCellOverlay = () => {
         left: `${getNumberFromPXString(cellElement.style.left)}px`,
         position: 'absolute',
         pointerEvents: 'none',
+        userSelect: 'none',
+        zIndex: OverlayZIndex,
       }}
     >
       <div
@@ -111,7 +124,6 @@ const ActiveCellOverlay = () => {
           bottom: '-2px',
           right: '-2px',
           position: 'absolute',
-          zIndex: 20,
           pointerEvents: 'all',
         }}
         tabIndex={0}

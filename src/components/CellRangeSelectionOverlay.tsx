@@ -1,7 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { useSpreadsheet } from '../state/useSpreadsheet';
-import { selectionBorderWidth } from '../constants';
+import { OverlayZIndex, selectionBorderWidth } from '../constants';
 import { getGridContainer } from '../lib/dom';
 
 const CellRangeSelectionOverlay = () => {
@@ -11,6 +11,7 @@ const CellRangeSelectionOverlay = () => {
   const commonStyles: React.CSSProperties = {
     position: 'absolute',
     pointerEvents: 'none',
+    zIndex: OverlayZIndex,
   };
   const borderColor = '#0b57d0';
   const gridContainer = getGridContainer();
