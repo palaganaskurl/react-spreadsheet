@@ -24,7 +24,7 @@ const Cell = ({ row, column, cell, style }: CellProps) => {
 
   const cellRef = React.useRef<HTMLDivElement>(null);
 
-  const getCellContent = () => {
+  const getCellContent = React.useCallback(() => {
     if (
       isSelectingCellsForFormula &&
       activeRow === row &&
@@ -40,7 +40,7 @@ const Cell = ({ row, column, cell, style }: CellProps) => {
     }
 
     return cell.result?.toString() || cell.value;
-  };
+  }, [cell]);
 
   const setCellRangeStart = useSpreadsheet((state) => state.setCellRangeStart);
   const setCellRangeEnd = useSpreadsheet((state) => state.setCellRangeEnd);
@@ -62,14 +62,15 @@ const Cell = ({ row, column, cell, style }: CellProps) => {
     setActiveCell(row, column);
   };
 
-  const isCellActive = () => activeRow === row && activeColumn === column;
+  const isCellActive = React.useCallback(
+    () => activeRow === row && activeColumn === column,
+    [activeRow, activeColumn]
+  );
 
   const setWriteMethod = useSpreadsheet((state) => state.setWriteMethod);
-
   const isSelectingCellsForCellFormulaRange = useSpreadsheet(
     (state) => state.isSelectingCellsForCellFormulaRange
   );
-
   const setCellFormulaDragRangeEnd = useSpreadsheet(
     (state) => state.setCellFormulaDragRangeEnd
   );

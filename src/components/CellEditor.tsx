@@ -104,6 +104,9 @@ const CellEditor = () => {
     return null;
   }
 
+  // TODO: Fix some typings here, cannot type when selecting cells
+  //  for formula.
+
   return createPortal(
     <div
       role="textbox"
