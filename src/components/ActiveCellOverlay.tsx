@@ -4,7 +4,6 @@ import { useSpreadsheet } from '../state/useSpreadsheet';
 import { SelectionOverlayStyle } from '../types';
 import { selectionBorderWidth } from '../constants';
 import { getCellContainer, getNumberFromPXString } from '../lib/dom';
-import CellEditor from './CellEditor';
 
 const ActiveCellOverlay = () => {
   const [activeRow, activeColumn] = useSpreadsheet((state) => state.activeCell);
@@ -124,11 +123,9 @@ const ActiveCellOverlay = () => {
           setIsSelectingCellsForCellFormulaRange(true);
         }}
       />
-      {/* TODO: Try to remove this, and createPortal for this one and then memoized ActiveCellOverlay */}
-      <CellEditor />
     </div>,
     gridContainer
   );
 };
 
-export default ActiveCellOverlay;
+export default React.memo(ActiveCellOverlay);

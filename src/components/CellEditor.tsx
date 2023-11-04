@@ -1,11 +1,17 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import useFormulaEditor from '../lib/hooks/useFormulaEditor';
 import { useSpreadsheet } from '../state/useSpreadsheet';
-import { placeCaretAtEnd } from '../lib/dom';
+import {
+  getCellContainer,
+  getNumberFromPXString,
+  placeCaretAtEnd,
+} from '../lib/dom';
 
 const CellEditor = () => {
   // TODO: When write method is "append", make the cursor
   const [activeRow, activeColumn] = useSpreadsheet((state) => state.activeCell);
+  const activeCellElement = getCellContainer(activeRow, activeColumn);
   const writeMethod = useSpreadsheet((state) => state.writeMethod);
   const setWriteMethod = useSpreadsheet((state) => state.setWriteMethod);
   const setCellData = useSpreadsheet((state) => state.setCellData);
@@ -19,6 +25,7 @@ const CellEditor = () => {
     (state) => state.emptyFormulaCellSelectionPoints
   );
   const { resolveFormula, parseFormula } = useFormulaEditor();
+  const gridContainer = document.querySelector('#gridContainer');
 
   const inputBoxRef = React.useRef<HTMLDivElement>(null);
 
@@ -29,6 +36,14 @@ const CellEditor = () => {
 
     placeCaretAtEnd(inputBoxRef.current);
   }, [cellData]);
+
+  if (activeCellElement === null) {
+    return null;
+  }
+
+  if (gridContainer === null) {
+    return null;
+  }
 
   if (cellData === null) {
     return null;
@@ -52,7 +67,10 @@ const CellEditor = () => {
     return cellData.value;
   };
 
-  return (
+  const cellElementBoundingClientRect =
+    activeCellElement.getBoundingClientRect();
+
+  return createPortal(
     <div
       role="textbox"
       tabIndex={0}
@@ -60,8 +78,12 @@ const CellEditor = () => {
       id="inputBox"
       contentEditable
       style={{
-        width: '100%',
-        height: '100%',
+        width: `${cellElementBoundingClientRect.width}px`,
+        height: `${cellElementBoundingClientRect.height}px`,
+        top: `${getNumberFromPXString(activeCellElement.style.top)}px`,
+        left: `${getNumberFromPXString(activeCellElement.style.left)}px`,
+        position: 'absolute',
+        pointerEvents: 'none',
         outline:
           writeMethod === 'overwrite'
             ? '0px solid transparent'
@@ -172,7 +194,8 @@ const CellEditor = () => {
       }}
     >
       {getCellValue()}
-    </div>
+    </div>,
+    gridContainer
   );
 };
 
