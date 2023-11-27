@@ -25,9 +25,8 @@ const CellComponent = ({ cell }: { cell: Cell }) => {
     const activeCellPosition: ActiveCellPosition = {
       width: rectAttrs.width,
       height: rectAttrs.height,
-      // TODO: Need to know why I have to add 15px
-      top: rectAttrs.y + 15,
-      left: rectAttrs.x + 15,
+      top: rectAttrs.y,
+      left: rectAttrs.x,
     };
 
     setActiveCell(cell.row, cell.column, activeCellPosition);
@@ -83,4 +82,4 @@ const CellComponent = ({ cell }: { cell: Cell }) => {
   );
 };
 
-export default CellComponent;
+export default React.memo(CellComponent);

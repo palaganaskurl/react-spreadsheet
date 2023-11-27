@@ -2,7 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { useSpreadsheet } from '../state/useSpreadsheet';
 import { selectionBorderWidth } from '../constants';
-import { getCellContainer, getGridContainer } from '../lib/dom';
+import { getCellContainer, getKonvaContainer } from '../lib/dom';
 
 const CellFormulaDragOverlay = () => {
   const cellFormulaDragRangeSelection = useSpreadsheet(
@@ -15,7 +15,7 @@ const CellFormulaDragOverlay = () => {
   const borderColor = 'gray';
   const [activeRow, activeColumn] = useSpreadsheet((state) => state.activeCell);
   const cellElement = getCellContainer(activeRow, activeColumn);
-  const gridContainer = getGridContainer();
+  const gridContainer = getKonvaContainer();
 
   if (
     gridContainer === null ||

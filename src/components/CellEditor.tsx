@@ -10,9 +10,11 @@ import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
+import { createPortal } from 'react-dom';
 import { useSpreadsheet } from '../state/useSpreadsheet';
 import useFormulaEditor from '../lib/hooks/useFormulaEditor';
 import { ActiveCellPosition } from '../types';
+import { getKonvaContainer } from '../lib/dom';
 
 const FocusPlugin = () => {
   const [editor] = useLexicalComposerContext();
@@ -75,8 +77,8 @@ const EnterCommand = () => {
           width: nextCell.width,
           height: nextCell.height,
           // TODO: Need to know why I have to add 15px
-          top: nextCell.y + 15,
-          left: nextCell.x + 15,
+          top: nextCell.y,
+          left: nextCell.x,
         };
 
         setActiveCell(activeRow + 1, activeColumn, activeCellPosition);
@@ -131,6 +133,12 @@ const CellEditor = () => {
     onError,
   };
 
+  const konvaJSContainer = getKonvaContainer();
+
+  if (!konvaJSContainer) {
+    return null;
+  }
+
   if (isCellEditorFocused === false) {
     return null;
   }
@@ -139,7 +147,7 @@ const CellEditor = () => {
     return null;
   }
 
-  return (
+  return createPortal(
     <div
       id="inputBox"
       style={{
@@ -267,8 +275,9 @@ const CellEditor = () => {
         <EnterCommand />
         <FocusPlugin />
       </LexicalComposer>
-    </div>
+    </div>,
+    konvaJSContainer
   );
 };
 
-export default CellEditor;
+export default React.memo(CellEditor);

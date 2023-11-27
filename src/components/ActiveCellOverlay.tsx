@@ -1,6 +1,8 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { useSpreadsheet } from '../state/useSpreadsheet';
-import { CellOutlineWidth, selectionBorderWidth } from '../constants';
+import { selectionBorderWidth } from '../constants';
+import { getKonvaContainer } from '../lib/dom';
 
 const ActiveCellOverlay = () => {
   // const setCellFormulaDragRangeStart = useSpreadsheet(
@@ -19,6 +21,12 @@ const ActiveCellOverlay = () => {
     (state) => state.isCellEditorFocused
   );
 
+  const konvaJSContainer = getKonvaContainer();
+
+  if (!konvaJSContainer) {
+    return null;
+  }
+
   if (activeCellPosition === null) {
     return null;
   }
@@ -30,12 +38,12 @@ const ActiveCellOverlay = () => {
     borderColor: '#0b57d0',
   };
 
-  return (
+  return createPortal(
     <div
       id="activeCell"
       style={{
-        width: `${activeCellPosition.width + CellOutlineWidth}px`,
-        height: `${activeCellPosition.height + CellOutlineWidth}px`,
+        width: `${activeCellPosition.width}px`,
+        height: `${activeCellPosition.height}px`,
         top: activeCellPosition.top,
         left: activeCellPosition.left,
         position: 'absolute',
@@ -58,7 +66,7 @@ const ActiveCellOverlay = () => {
         style={{
           borderBottomWidth: selectionBorderWidth,
           borderBottomStyle: 'solid',
-          top: `${activeCellPosition.height}px`,
+          top: `${activeCellPosition.height - selectionBorderWidth}px`,
           width: `${activeCellPosition.width}px`,
           left: '0px',
           ...commonStyles,
@@ -70,7 +78,7 @@ const ActiveCellOverlay = () => {
           borderRightStyle: 'solid',
           top: '0px',
           height: `${activeCellPosition.height}px`,
-          left: `${activeCellPosition.width}px`,
+          left: `${activeCellPosition.width - selectionBorderWidth}px`,
           ...commonStyles,
         }}
       />
@@ -90,8 +98,8 @@ const ActiveCellOverlay = () => {
           backgroundColor: '#0b57d0',
           width: '6px',
           height: '6px',
-          bottom: '-4px',
-          right: '-4px',
+          bottom: '0px',
+          right: '0px',
           position: 'absolute',
           pointerEvents: 'all',
         }}
@@ -104,8 +112,9 @@ const ActiveCellOverlay = () => {
           // setIsSelectingCellsForCellFormulaRange(true);
         }}
       />
-    </div>
+    </div>,
+    konvaJSContainer
   );
 };
 
-export default ActiveCellOverlay;
+export default React.memo(ActiveCellOverlay);

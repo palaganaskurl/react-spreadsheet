@@ -16,10 +16,8 @@ import ColumnLabel from './ColumnLabel';
 import { getCellAddressLabel } from '../lib/spreadsheet';
 import FormulaEditor from './FormulaEditor';
 import FormulaCellSelectionOverlay from './FormulaCellSelectionOverlay';
-import ActiveCellOverlay from './ActiveCellOverlay';
 import RowLabel from './RowLabel';
 import CellFormulaDragOverlay from './CellFormulaDragOverlay';
-import CellRangeSelectionOverlay from './CellRangeSelectionOverlay';
 
 const FormulaBarStyle: React.CSSProperties = {
   display: 'flex',
@@ -264,11 +262,8 @@ export function Spreadsheet() {
       </div>
       <RowContextMenu />
       <ColumnContextMenu />
-      <CellRangeSelectionOverlay />
       <FormulaCellSelectionOverlay />
       <CellFormulaDragOverlay />
-      {/* <CellEditor /> */}
-      <ActiveCellOverlay />
     </div>
   );
 }
