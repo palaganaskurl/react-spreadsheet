@@ -95,10 +95,10 @@ const CanvasSpreadsheet = () => {
         onMouseMove={onMouseMove}
       >
         <Layer>
+          <CellRangeSelectionOverlay />
           {renderColumnHeaders()}
           {renderRowLabels()}
           {renderCells()}
-          <CellRangeSelectionOverlay />
         </Layer>
       </Stage>
       <ActiveCellOverlay />

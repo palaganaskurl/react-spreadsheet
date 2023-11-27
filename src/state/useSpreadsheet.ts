@@ -179,7 +179,7 @@ const useSpreadsheet = create<SpreadsheetState>()(
         }
 
         // TODO: Idk why but need to get back on the context of this one.
-        //  The 2 loops below seems wrong.
+        //  The 2 loops below seems wrong but it works. :D
         const [startRow, startCol] = cellRangeStart;
         const [endRow, endCol] = point;
 
@@ -188,6 +188,8 @@ const useSpreadsheet = create<SpreadsheetState>()(
 
         const endCellCol = Math.max(startCol, endCol);
         const endCellRow = Math.max(startRow, endRow);
+
+        const startCell = data[startCellRow][startCellCol];
 
         let width = 0;
         let height = 0;
@@ -203,8 +205,8 @@ const useSpreadsheet = create<SpreadsheetState>()(
         set({
           cellRangeSelection: {
             width,
-            top: data[startCellRow][startCellCol].y,
-            left: data[startCellRow][startCellCol].x,
+            top: startCell.y,
+            left: startCell.x,
             height,
           },
           cellRangeEnd: point,

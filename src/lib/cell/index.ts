@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import { FormulaEntity } from '../../types';
 
 import { DefaultCellHeight, DefaultCellWidth } from '../../constants';
@@ -26,7 +25,8 @@ class Cell {
 
   constructor(row: number, column: number) {
     this.formulaEntities = [];
-    this.id = uuidv4();
+    // TODO: Remove this permanently.
+    // this.id = uuidv4();
 
     this.result = '';
     this.value = '';
