@@ -4,13 +4,14 @@ import { useSpreadsheet } from '../state/useSpreadsheet';
 import { OverlayZIndex, selectionBorderWidth } from '../constants';
 import { getGridContainer } from '../lib/dom';
 
+// TODO: Check border excess
 const CellRangeSelectionOverlay = () => {
   const cellRangeSelection = useSpreadsheet(
     (state) => state.cellRangeSelection
   );
   const commonStyles: React.CSSProperties = {
     position: 'absolute',
-    pointerEvents: 'none',
+    // pointerEvents: 'none',
     zIndex: OverlayZIndex,
   };
   const borderColor = '#0b57d0';

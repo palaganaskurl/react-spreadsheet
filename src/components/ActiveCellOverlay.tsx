@@ -1,17 +1,9 @@
 import React from 'react';
-import { createPortal } from 'react-dom';
 import { useSpreadsheet } from '../state/useSpreadsheet';
-import { SelectionOverlayStyle } from '../types';
 import { OverlayZIndex, selectionBorderWidth } from '../constants';
-import {
-  getCellContainer,
-  getGridContainer,
-  getNumberFromPXString,
-} from '../lib/dom';
 
 const ActiveCellOverlay = () => {
   const [activeRow, activeColumn] = useSpreadsheet((state) => state.activeCell);
-  const cellElement = getCellContainer(activeRow, activeColumn);
   const setCellFormulaDragRangeStart = useSpreadsheet(
     (state) => state.setCellFormulaDragRangeStart
   );
@@ -21,28 +13,11 @@ const ActiveCellOverlay = () => {
   const setIsSelectingCellsForCellFormulaRange = useSpreadsheet(
     (state) => state.setIsSelectingCellsForCellFormulaRange
   );
-  const gridContainer = getGridContainer();
+  const activeCellPosition = useSpreadsheet(
+    (state) => state.activeCellPosition
+  );
 
-  const getOverlayStyles =
-    React.useCallback((): SelectionOverlayStyle | null => {
-      if (cellElement === null) {
-        return null;
-      }
-
-      const cellElementBoundingClientRect = cellElement.getBoundingClientRect();
-
-      return {
-        borderColor: '#0b57d0',
-        width: cellElementBoundingClientRect.width,
-        height: cellElementBoundingClientRect.height,
-      };
-    }, [cellElement]);
-
-  if (gridContainer === null) {
-    return null;
-  }
-
-  if (!cellElement) {
+  if (activeCellPosition === null) {
     return null;
   }
 
@@ -51,26 +26,19 @@ const ActiveCellOverlay = () => {
     pointerEvents: 'none',
     userSelect: 'none',
     zIndex: OverlayZIndex,
+    borderColor: '#0b57d0',
   };
 
-  const style = getOverlayStyles();
-
-  commonStyles.borderColor = style?.borderColor;
-
-  if (!style) {
-    return null;
-  }
-
-  return createPortal(
+  return (
     <div
       id="activeCell"
       style={{
-        width: `${style.width}px`,
-        height: `${style.height}px`,
-        top: `${getNumberFromPXString(cellElement.style.top)}px`,
-        left: `${getNumberFromPXString(cellElement.style.left)}px`,
+        width: `${activeCellPosition.width}px`,
+        height: `${activeCellPosition.height}px`,
+        top: activeCellPosition.top,
+        left: activeCellPosition.left,
         position: 'absolute',
-        pointerEvents: 'none',
+        // pointerEvents: 'none',
         userSelect: 'none',
         zIndex: OverlayZIndex,
       }}
@@ -80,7 +48,7 @@ const ActiveCellOverlay = () => {
           borderTopWidth: selectionBorderWidth,
           borderTopStyle: 'solid',
           top: '0px',
-          width: `${style.width}px`,
+          width: `${activeCellPosition.width}px`,
           left: '0px',
           ...commonStyles,
         }}
@@ -89,8 +57,8 @@ const ActiveCellOverlay = () => {
         style={{
           borderBottomWidth: selectionBorderWidth,
           borderBottomStyle: 'solid',
-          top: `${style.height - selectionBorderWidth}px`,
-          width: `${style.width}px`,
+          top: `${activeCellPosition.height}px`,
+          width: `${activeCellPosition.width}px`,
           left: '0px',
           ...commonStyles,
         }}
@@ -100,8 +68,8 @@ const ActiveCellOverlay = () => {
           borderRightWidth: selectionBorderWidth,
           borderRightStyle: 'solid',
           top: '0px',
-          height: `${style.height}px`,
-          left: `${style.width - selectionBorderWidth}px`,
+          height: `${activeCellPosition.height}px`,
+          left: `${activeCellPosition.width}px`,
           ...commonStyles,
         }}
       />
@@ -111,7 +79,7 @@ const ActiveCellOverlay = () => {
           borderLeftStyle: 'solid',
           top: '0px',
           left: '0px',
-          height: `${style.height}px`,
+          height: `${activeCellPosition.height}px`,
           ...commonStyles,
         }}
       />
@@ -121,8 +89,8 @@ const ActiveCellOverlay = () => {
           backgroundColor: '#0b57d0',
           width: '6px',
           height: '6px',
-          bottom: '-2px',
-          right: '-2px',
+          bottom: '-4px',
+          right: '-4px',
           position: 'absolute',
           pointerEvents: 'all',
         }}
@@ -130,14 +98,13 @@ const ActiveCellOverlay = () => {
         aria-label="Active Cell Overlay"
         role="button"
         onMouseDown={() => {
-          setCellFormulaDragRangeEnd(null);
-          setCellFormulaDragRangeStart([activeRow, activeColumn]);
-          setIsSelectingCellsForCellFormulaRange(true);
+          // setCellFormulaDragRangeEnd(null);
+          // setCellFormulaDragRangeStart([activeRow, activeColumn]);
+          // setIsSelectingCellsForCellFormulaRange(true);
         }}
       />
-    </div>,
-    gridContainer
+    </div>
   );
 };
 
-export default React.memo(ActiveCellOverlay);
+export default ActiveCellOverlay;

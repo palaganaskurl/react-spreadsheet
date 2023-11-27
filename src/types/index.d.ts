@@ -48,10 +48,11 @@ export interface ColumnContextMenuProps {
   columnIndex: number;
 }
 
-export interface SelectionOverlayStyle {
-  borderColor: string;
+export interface ActiveCellPosition {
   height: number;
   width: number;
+  top: number;
+  left: number;
 }
 
 export type Point = [number, number];

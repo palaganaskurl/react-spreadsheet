@@ -3,3 +3,13 @@
 .Spreadsheet * {
   font-family: 'Inter';
 }
+
+.tiptap p {
+  margin: 0;
+}
+
+.lexical-p {
+  margin: 0;
+  height: inherit;
+  width: inherit;
+}

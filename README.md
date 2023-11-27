@@ -10,12 +10,13 @@
 ## TODO
 
 - [ ] Cell range formula handling.
+- [ ] Copy Google Sheets cell overwrite/append behavior.
 - [ ] Current selection not adjusting when resizing column / and row possibly.
 - [ ] Functionalities in Row and Column Context Menu
 - [ ] Sheets
 - [ ] Formatting of cell content
 - [ ] Cell context menu
-- [ ] Virtualization / Optimizations
+- [ ] Optimizations
 - [ ] See other TODO in the code
 
 # React Package Starter

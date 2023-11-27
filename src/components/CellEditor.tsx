@@ -6,12 +6,104 @@ import {
   getCellContainer,
   getGridContainer,
   getNumberFromPXString,
-  placeCaretAtEnd,
 } from '../lib/dom';
+
+import {
+  $getRoot,
+  $getSelection,
+  CLEAR_EDITOR_COMMAND,
+  COMMAND_PRIORITY_HIGH,
+  EditorState,
+  KEY_ENTER_COMMAND,
+  LexicalEditor,
+} from 'lexical';
+
+import { LexicalComposer } from '@lexical/react/LexicalComposer';
+import { PlainTextPlugin } from '@lexical/react/LexicalPlainTextPlugin';
+import { ContentEditable } from '@lexical/react/LexicalContentEditable';
+import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
+import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
+import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
+
+const EnterCommand = () => {
+  const [editor] = useLexicalComposerContext();
+
+  // TODO: When write method is "append", make the cursor
+  const activeCell = useSpreadsheet((state) => state.activeCell);
+  const [activeRow, activeColumn] = activeCell;
+
+  console.log('activeCell', activeCell);
+
+  const setWriteMethod = useSpreadsheet((state) => state.setWriteMethod);
+  const setCellData = useSpreadsheet((state) => state.setCellData);
+  const getCell = useSpreadsheet((state) => state.getCell);
+  const cellData = getCell(activeRow, activeColumn);
+  const setIsSelectingCellsForFormula = useSpreadsheet(
+    (state) => state.setIsSelectingCellsForFormula
+  );
+  const setActiveCell = useSpreadsheet((state) => state.setActiveCell);
+  const emptyFormulaCellSelectionPoints = useSpreadsheet(
+    (state) => state.emptyFormulaCellSelectionPoints
+  );
+  const { resolveFormula, parseFormula } = useFormulaEditor();
+
+  React.useEffect(
+    () =>
+      editor.registerCommand(
+        KEY_ENTER_COMMAND,
+        enterEvent,
+        COMMAND_PRIORITY_HIGH
+      ),
+    [editor]
+  );
+
+  const enterEvent = (event: KeyboardEvent) => {
+    const { shiftKey, key } = event;
+
+    if (key === 'Enter' && shiftKey === false) {
+      event.preventDefault();
+
+      const cellContent = editor.getRootElement()?.textContent || '';
+
+      setIsSelectingCellsForFormula(false);
+
+      const { evaluatedFormula, formulaResult } = resolveFormula(
+        cellData?.value || ''
+      );
+
+      if (evaluatedFormula && formulaResult) {
+        // Since the Cell is memoized, it doesn't re-render
+        //  when the formulaResult is the same.
+        // Temporarily, we set the cellRef textContent
+        //  manually.
+        // cellRef.current!.textContent = formulaResult;
+      } else {
+        setCellData(activeRow, activeColumn, {
+          value: cellContent,
+        });
+      }
+
+      emptyFormulaCellSelectionPoints();
+      setActiveCell(activeRow + 1, activeColumn);
+      // TODO: Get back on this setWriteMethod
+      // setWriteMethod('overwrite');
+
+      editor.dispatchCommand(CLEAR_EDITOR_COMMAND, undefined);
+    }
+
+    return true;
+  };
+
+  return null;
+};
 
 const CellEditor = () => {
   // TODO: When write method is "append", make the cursor
-  const [activeRow, activeColumn] = useSpreadsheet((state) => state.activeCell);
+  const activeCell = useSpreadsheet((state) => state.activeCell);
+  const [activeRow, activeColumn] = activeCell;
+
   const writeMethod = useSpreadsheet((state) => state.writeMethod);
   const setWriteMethod = useSpreadsheet((state) => state.setWriteMethod);
   const setCellData = useSpreadsheet((state) => state.setCellData);
@@ -26,10 +118,10 @@ const CellEditor = () => {
   );
   const { resolveFormula, parseFormula } = useFormulaEditor();
   const gridContainer = getGridContainer();
-  const inputBoxRef = React.useRef<HTMLDivElement>(null);
 
-  const [editorPosition, setEditorPosition] =
-    React.useState<React.CSSProperties>({});
+  const activeCellPosition = useSpreadsheet(
+    (state) => state.activeCellPosition
+  );
 
   const getStyleOnWriteMethod = React.useCallback((): React.CSSProperties => {
     if (writeMethod === 'append') {
@@ -40,7 +132,6 @@ const CellEditor = () => {
 
     return {
       outline: '0px solid #a8c7fa',
-      caretColor: 'transparent',
     };
   }, [writeMethod]);
 
@@ -66,89 +157,97 @@ const CellEditor = () => {
     return cellData.value;
   }, [cellData, writeMethod]);
 
-  React.useEffect(() => {
-    const activeCellElementIn = getCellContainer(activeRow, activeColumn);
+  const theme = {
+    paragraph: 'lexical-p',
+  };
 
-    if (activeCellElementIn === null) {
-      return;
-    }
+  // try to recover gracefully without losing user data.
+  function onError(error) {
+    console.error(error);
+  }
 
-    const cellElementBoundingClientRect =
-      activeCellElementIn.getBoundingClientRect();
-
-    setEditorPosition({
-      width: `${cellElementBoundingClientRect.width}px`,
-      height: `${cellElementBoundingClientRect.height}px`,
-      top: `${getNumberFromPXString(activeCellElementIn.style.top)}px`,
-      left: `${getNumberFromPXString(activeCellElementIn.style.left)}px`,
-    });
-  }, [activeRow, activeColumn]);
-
-  React.useEffect(() => {
-    if (inputBoxRef.current === null) {
-      return;
-    }
-
-    if (writeMethod === 'append') {
-      placeCaretAtEnd(inputBoxRef.current);
-    } else {
-      inputBoxRef.current.focus();
-    }
-  }, [editorPosition]);
+  const initialConfig = {
+    namespace: 'Cell Editor',
+    theme,
+    onError,
+  };
 
   if (gridContainer === null) {
     return null;
   }
 
-  if (cellData === null) {
-    return null;
-  }
+  console.log('gridContainer', gridContainer);
 
-  // TODO: Fix some typings here, cannot type when selecting cells
-  //  for formula.
+  // if (cellData === null) {
+  //   return null;
+  // }
+
+  // const onEnter = (
+  //   editorState: EditorState,
+  //   editor: LexicalEditor,
+  //   tags: Set<string>
+  // ) => {
+  //   const cellContent = editor.getRootElement()?.textContent || '';
+
+  //   setIsSelectingCellsForFormula(false);
+
+  //   const { evaluatedFormula, formulaResult } = resolveFormula(
+  //     cellData?.value || ''
+  //   );
+
+  //   if (evaluatedFormula && formulaResult) {
+  //     // Since the Cell is memoized, it doesn't re-render
+  //     //  when the formulaResult is the same.
+  //     // Temporarily, we set the cellRef textContent
+  //     //  manually.
+  //     // cellRef.current!.textContent = formulaResult;
+  //   } else {
+  //     setCellData(activeRow, activeColumn, {
+  //       value: cellContent,
+  //     });
+  //   }
+
+  //   emptyFormulaCellSelectionPoints();
+  //   setActiveCell(activeRow + 1, activeColumn);
+  //   // setWriteMethod('overwrite');
+  // };
 
   return createPortal(
     <div
-      role="textbox"
-      tabIndex={0}
-      ref={inputBoxRef}
+      autoFocus
       id="inputBox"
-      contentEditable
       style={{
-        zIndex: 120,
+        zIndex: 130,
         position: 'absolute',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        // cursor: 'default',
-        pointerEvents: 'none',
         ...getStyleOnWriteMethod(),
-        ...editorPosition,
+        ...activeCellPosition,
       }}
-      suppressContentEditableWarning
-      onBeforeInput={(e) => {
-        if (writeMethod === 'overwrite') {
-          e.currentTarget.textContent = '';
-        }
-      }}
-      onInput={(e) => {
-        const cellContent = e.currentTarget.textContent || '';
+      // onBeforeInput={(e) => {
+      //   if (writeMethod === 'overwrite') {
+      //     e.currentTarget.textContent = '';
+      //   }
+      // }}
+      // onInput={(e) => {
+      //   console.log('input');
+      //   const cellContent = e.currentTarget.textContent || '';
 
-        if (cellContent.startsWith('=')) {
-          setIsSelectingCellsForFormula(true);
-          setWriteMethod('append');
-          parseFormula(e);
-        }
+      //   if (cellContent.startsWith('=')) {
+      //     setIsSelectingCellsForFormula(true);
+      //     setWriteMethod('append');
+      //     parseFormula(e);
+      //   }
 
-        if (writeMethod === 'overwrite') {
-          setWriteMethod('append');
-        }
+      //   if (writeMethod === 'overwrite') {
+      //     setWriteMethod('append');
+      //   }
 
-        setCellData(activeRow, activeColumn, {
-          value: cellContent,
-        });
-      }}
+      //   setCellData(activeRow, activeColumn, {
+      //     value: cellContent,
+      //   });
+      // }}
       onKeyDown={(e) => {
+        console.log('E', e);
+
         if (e.defaultPrevented) {
           return; // Do nothing if the event was already processed
         }
@@ -178,55 +277,71 @@ const CellEditor = () => {
             break;
         }
       }}
-      onKeyUp={(e) => {
-        switch (e.key) {
-          case 'Enter': {
-            const cellContent = e.currentTarget.textContent ?? '';
+      // onKeyUp={(e) => {
+      //   switch (e.key) {
+      //     case 'Enter': {
+      //       const cellContent = e.currentTarget.textContent ?? '';
 
-            setIsSelectingCellsForFormula(false);
+      //       setIsSelectingCellsForFormula(false);
 
-            const { evaluatedFormula, formulaResult } = resolveFormula(
-              cellData?.value || ''
-            );
+      //       const { evaluatedFormula, formulaResult } = resolveFormula(
+      //         cellData?.value || ''
+      //       );
 
-            if (evaluatedFormula && formulaResult) {
-              // Since the Cell is memoized, it doesn't re-render
-              //  when the formulaResult is the same.
-              // Temporarily, we set the cellRef textContent
-              //  manually.
-              // cellRef.current!.textContent = formulaResult;
-            } else {
-              setCellData(activeRow, activeColumn, {
-                value: cellContent,
-              });
-            }
+      //       if (evaluatedFormula && formulaResult) {
+      //         // Since the Cell is memoized, it doesn't re-render
+      //         //  when the formulaResult is the same.
+      //         // Temporarily, we set the cellRef textContent
+      //         //  manually.
+      //         // cellRef.current!.textContent = formulaResult;
+      //       } else {
+      //         setCellData(activeRow, activeColumn, {
+      //           value: cellContent,
+      //         });
+      //       }
 
-            emptyFormulaCellSelectionPoints();
-            setActiveCell(activeRow + 1, activeColumn);
-            setWriteMethod('overwrite');
+      //       emptyFormulaCellSelectionPoints();
+      //       setActiveCell(activeRow + 1, activeColumn);
+      //       setWriteMethod('overwrite');
 
-            break;
-          }
-          case 'Escape': {
-            setIsSelectingCellsForFormula(false);
-            emptyFormulaCellSelectionPoints();
+      //       break;
+      //     }
+      //     case 'Escape': {
+      //       setIsSelectingCellsForFormula(false);
+      //       emptyFormulaCellSelectionPoints();
 
-            // TODO: Ideally, this should be set to the value
-            //  before Enter or Blurred.
-            // Maybe need to check on saving the value while
-            //  user is inputting
-            setCellData(activeRow, activeColumn, {
-              value: cellData?.value,
-            });
-            setWriteMethod('overwrite');
-            break;
-          }
-          default:
-            break;
-        }
-      }}
+      //       // TODO: Ideally, this should be set to the value
+      //       //  before Enter or Blurred.
+      //       // Maybe need to check on saving the value while
+      //       //  user is inputting
+      //       setCellData(activeRow, activeColumn, {
+      //         value: cellData?.value,
+      //       });
+      //       setWriteMethod('overwrite');
+      //       break;
+      //     }
+      //     default:
+      //       break;
+      //   }
+      // }}
     >
-      {getCellValue()}
+      <LexicalComposer initialConfig={initialConfig}>
+        <RichTextPlugin
+          contentEditable={
+            <ContentEditable
+              id="cellEditor"
+              style={{
+                outline: '2px solid aqua',
+                ...activeCellPosition,
+              }}
+            />
+          }
+          placeholder={null}
+          ErrorBoundary={LexicalErrorBoundary}
+        />
+        <HistoryPlugin />
+        <EnterCommand />
+      </LexicalComposer>
     </div>,
     gridContainer
   );

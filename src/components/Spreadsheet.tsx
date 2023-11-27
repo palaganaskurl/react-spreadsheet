@@ -132,6 +132,7 @@ export function Spreadsheet() {
         <div style={FormulaBarActiveCellStyle}>{renderCellAddressLabel()}</div>
         <FormulaEditor />
       </div>
+
       <div
         style={{
           zIndex: 10,
@@ -264,11 +265,11 @@ export function Spreadsheet() {
       </div>
       <RowContextMenu />
       <ColumnContextMenu />
-      <ActiveCellOverlay />
       <CellRangeSelectionOverlay />
       <FormulaCellSelectionOverlay />
       <CellFormulaDragOverlay />
-      <CellEditor />
+      {/* <CellEditor /> */}
+      <ActiveCellOverlay />
     </div>
   );
 }

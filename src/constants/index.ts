@@ -5,3 +5,6 @@ export const ColumnContextMenuID = 'ColumnContextMenuID';
 export const selectionBorderWidth = 2;
 
 export const OverlayZIndex = 110;
+
+export const CellStrokeSize = 1;
+export const CellStrokeColor = '#E1E1E1';

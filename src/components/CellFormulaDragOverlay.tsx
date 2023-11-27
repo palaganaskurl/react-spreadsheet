@@ -10,7 +10,7 @@ const CellFormulaDragOverlay = () => {
   );
   const commonStyles: React.CSSProperties = {
     position: 'absolute',
-    pointerEvents: 'none',
+    // pointerEvents: 'none',
   };
   const borderColor = 'gray';
   const [activeRow, activeColumn] = useSpreadsheet((state) => state.activeCell);

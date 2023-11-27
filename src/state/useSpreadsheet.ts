@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import {
+  ActiveCellPosition,
   CellFormulaDragSelection,
   CellSelection,
   FormulaCellSelection,
@@ -10,12 +11,9 @@ import {
 import { generateRandomColor } from '../lib/color';
 import { getCellAddressLabel } from '../lib/spreadsheet';
 import { getEntityCountByType } from '../lib/formula';
-import {
-  focusOnCell,
-  getCellContainer,
-  getNumberFromPXString,
-} from '../lib/dom';
+import { getCellContainer, getNumberFromPXString } from '../lib/dom';
 import Cell from '../lib/cell';
+import React from 'react';
 
 export interface SpreadsheetState {
   activeCell: [number, number];
@@ -38,7 +36,11 @@ export interface SpreadsheetState {
   isEditingAtFormulaEditor: boolean;
   isSelectingCellsForCellFormulaRange: boolean;
   isSelectingCellsForFormula: boolean;
-  setActiveCell: (row: number, column: number) => void;
+  setActiveCell: (
+    row: number,
+    column: number,
+    activeCellPosition: ActiveCellPosition
+  ) => void;
   setCellData: (row: number, column: number, updateData: Partial<Cell>) => void;
   setCellFormulaDragRangeEnd: (point: Point | null) => void;
   setCellFormulaDragRangeStart: (point: Point | null) => void;
@@ -59,6 +61,8 @@ export interface SpreadsheetState {
   setIsSelectingCellsForFormula: (isSelectingCellsForFormula: boolean) => void;
   setWriteMethod: (writeMethod: 'overwrite' | 'append') => void;
   writeMethod: 'overwrite' | 'append';
+
+  activeCellPosition: ActiveCellPosition | null;
 }
 
 export const DEFAULT_COLUMN_WIDTH = 50;
@@ -114,12 +118,20 @@ const useSpreadsheet = create<SpreadsheetState>()(
 
         return null;
       },
-      setActiveCell: (row: number, column: number) => {
+      setActiveCell: (
+        row: number,
+        column: number,
+        activeCellPosition: ActiveCellPosition
+      ) => {
+        // const activeCell = getCellContainer(row, column);
+        // const activeCellBoundingClientRect =
+        //   activeCell!.getBoundingClientRect();
+        // const { width, height } = activeCellBoundingClientRect;
         set({
           activeCell: [row, column],
           cellFormulaDragRangeSelection: null,
+          activeCellPosition,
         });
-        focusOnCell(row, column);
       },
       insertNewRowAt: (row: number, where: 'before' | 'after') => {
         const { data } = get();
@@ -509,6 +521,7 @@ const useSpreadsheet = create<SpreadsheetState>()(
           cellFormulaDragRangeSelection: null,
         });
       },
+      activeCellPosition: null,
     }),
     {
       // skipHydration: true,
@@ -529,6 +542,8 @@ const useSpreadsheet = create<SpreadsheetState>()(
                 'cellFormulaDragRangeSelection',
                 'cellFormulaDragRangeStart',
                 'isSelectingCellsForCellFormulaRange',
+                'activeCellPosition',
+                'activeCell',
               ].includes(key)
           )
         ),

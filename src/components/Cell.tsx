@@ -40,7 +40,7 @@ const Cell = ({ row, column, cell, style }: CellProps) => {
     }
 
     return cell.result?.toString() || cell.value;
-  }, [cell]);
+  }, [cell, activeRow, activeColumn, isSelectingCellsForFormula]);
 
   const setCellRangeStart = useSpreadsheet((state) => state.setCellRangeStart);
   const setCellRangeEnd = useSpreadsheet((state) => state.setCellRangeEnd);
@@ -78,6 +78,9 @@ const Cell = ({ row, column, cell, style }: CellProps) => {
     (state) => state.finishSelectingCellsForFormula
   );
 
+  // on click
+  // if currently active cell, go focus
+
   return (
     <div
       onKeyDown={() => {}}
@@ -89,28 +92,13 @@ const Cell = ({ row, column, cell, style }: CellProps) => {
       aria-label="Cell"
       role="button"
       tabIndex={0}
-      onClick={(e) => {
-        switch (e.detail) {
-          case 1: {
-            setActiveCellConditionally();
+      onClick={() => {
+        // TODO: remove this?
+        setActiveCellConditionally();
 
-            if (!isSelectingCellsForFormula) {
-              setWriteMethod('overwrite');
-            }
-
-            break;
-          }
-          case 2: {
-            setActiveCellConditionally();
-            setWriteMethod('append');
-            setFormulaCellSelectionPoints(cell.formulaEntities);
-
-            break;
-          }
-          default: {
-            break;
-          }
-        }
+        // if (!isSelectingCellsForFormula) {
+        //   setWriteMethod('overwrite');
+        // }
       }}
       style={{
         ...CellStyle,
@@ -119,12 +107,14 @@ const Cell = ({ row, column, cell, style }: CellProps) => {
       onMouseDown={() => {
         setCellRangeEnd(null);
         setCellRangeStart([row, column]);
+        setActiveCell(row, column);
 
         // To avoid double calling of setActiveCellConditionally,
         //  will no execute setActiveCellConditionally here
         //  to avoid adding two formula selection point.
         if (!isSelectingCellsForFormula) {
-          setActiveCell(row, column);
+          // setActiveCell(row, column);
+          // setWriteMethod('overwrite');
         }
       }}
       onMouseUp={() => {
