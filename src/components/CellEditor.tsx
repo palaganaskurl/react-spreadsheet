@@ -1,53 +1,47 @@
 import React from 'react';
-import { createPortal } from 'react-dom';
-import useFormulaEditor from '../lib/hooks/useFormulaEditor';
-import { useSpreadsheet } from '../state/useSpreadsheet';
 import {
-  getCellContainer,
-  getGridContainer,
-  getNumberFromPXString,
-} from '../lib/dom';
-
-import {
-  $getRoot,
-  $getSelection,
   CLEAR_EDITOR_COMMAND,
   COMMAND_PRIORITY_HIGH,
-  EditorState,
   KEY_ENTER_COMMAND,
-  LexicalEditor,
 } from 'lexical';
-
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
-import { PlainTextPlugin } from '@lexical/react/LexicalPlainTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
-import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
+import { useSpreadsheet } from '../state/useSpreadsheet';
+import useFormulaEditor from '../lib/hooks/useFormulaEditor';
+import { ActiveCellPosition } from '../types';
+
+const FocusPlugin = () => {
+  const [editor] = useLexicalComposerContext();
+
+  React.useEffect(() => {
+    editor.focus();
+  }, [editor]);
+
+  return null;
+};
 
 const EnterCommand = () => {
   const [editor] = useLexicalComposerContext();
 
-  // TODO: When write method is "append", make the cursor
   const activeCell = useSpreadsheet((state) => state.activeCell);
   const [activeRow, activeColumn] = activeCell;
 
-  console.log('activeCell', activeCell);
-
-  const setWriteMethod = useSpreadsheet((state) => state.setWriteMethod);
-  const setCellData = useSpreadsheet((state) => state.setCellData);
-  const getCell = useSpreadsheet((state) => state.getCell);
-  const cellData = getCell(activeRow, activeColumn);
   const setIsSelectingCellsForFormula = useSpreadsheet(
     (state) => state.setIsSelectingCellsForFormula
   );
   const setActiveCell = useSpreadsheet((state) => state.setActiveCell);
-  const emptyFormulaCellSelectionPoints = useSpreadsheet(
-    (state) => state.emptyFormulaCellSelectionPoints
+  const setIsCellEditorFocused = useSpreadsheet(
+    (state) => state.setIsCellEditorFocused
   );
-  const { resolveFormula, parseFormula } = useFormulaEditor();
+  // const emptyFormulaCellSelectionPoints = useSpreadsheet(
+  //   (state) => state.emptyFormulaCellSelectionPoints
+  // );
+  const canvasStage = useSpreadsheet((state) => state.canvasStage);
+  const { resolveFormula } = useFormulaEditor();
 
   React.useEffect(
     () =>
@@ -69,26 +63,28 @@ const EnterCommand = () => {
 
       setIsSelectingCellsForFormula(false);
 
-      const { evaluatedFormula, formulaResult } = resolveFormula(
-        cellData?.value || ''
+      resolveFormula(cellContent);
+
+      const nextCells = canvasStage?.find(
+        `#cell-${activeRow + 1}-${activeColumn}`
       );
 
-      if (evaluatedFormula && formulaResult) {
-        // Since the Cell is memoized, it doesn't re-render
-        //  when the formulaResult is the same.
-        // Temporarily, we set the cellRef textContent
-        //  manually.
-        // cellRef.current!.textContent = formulaResult;
-      } else {
-        setCellData(activeRow, activeColumn, {
-          value: cellContent,
-        });
+      if (nextCells) {
+        const nextCell = nextCells[0].getAttrs();
+        const activeCellPosition: ActiveCellPosition = {
+          width: nextCell.width,
+          height: nextCell.height,
+          // TODO: Need to know why I have to add 15px
+          top: nextCell.y + 15,
+          left: nextCell.x + 15,
+        };
+
+        setActiveCell(activeRow + 1, activeColumn, activeCellPosition);
       }
 
-      emptyFormulaCellSelectionPoints();
-      setActiveCell(activeRow + 1, activeColumn);
-      // TODO: Get back on this setWriteMethod
-      // setWriteMethod('overwrite');
+      // emptyFormulaCellSelectionPoints();
+
+      setIsCellEditorFocused(false);
 
       editor.dispatchCommand(CLEAR_EDITOR_COMMAND, undefined);
     }
@@ -100,69 +96,32 @@ const EnterCommand = () => {
 };
 
 const CellEditor = () => {
-  // TODO: When write method is "append", make the cursor
-  const activeCell = useSpreadsheet((state) => state.activeCell);
-  const [activeRow, activeColumn] = activeCell;
+  // const activeCell = useSpreadsheet((state) => state.activeCell);
+  // const [activeRow, activeColumn] = activeCell;
 
-  const writeMethod = useSpreadsheet((state) => state.writeMethod);
-  const setWriteMethod = useSpreadsheet((state) => state.setWriteMethod);
-  const setCellData = useSpreadsheet((state) => state.setCellData);
-  const getCell = useSpreadsheet((state) => state.getCell);
-  const cellData = getCell(activeRow, activeColumn);
-  const setIsSelectingCellsForFormula = useSpreadsheet(
-    (state) => state.setIsSelectingCellsForFormula
+  // const setCellData = useSpreadsheet((state) => state.setCellData);
+  // const getCell = useSpreadsheet((state) => state.getCell);
+  // const cellData = getCell(activeRow, activeColumn);
+  // const setIsSelectingCellsForFormula = useSpreadsheet(
+  //   (state) => state.setIsSelectingCellsForFormula
+  // );
+  // const emptyFormulaCellSelectionPoints = useSpreadsheet(
+  //   (state) => state.emptyFormulaCellSelectionPoints
+  // );
+  const isCellEditorFocused = useSpreadsheet(
+    (state) => state.isCellEditorFocused
   );
-  const setActiveCell = useSpreadsheet((state) => state.setActiveCell);
-  const emptyFormulaCellSelectionPoints = useSpreadsheet(
-    (state) => state.emptyFormulaCellSelectionPoints
-  );
-  const { resolveFormula, parseFormula } = useFormulaEditor();
-  const gridContainer = getGridContainer();
 
   const activeCellPosition = useSpreadsheet(
     (state) => state.activeCellPosition
   );
-
-  const getStyleOnWriteMethod = React.useCallback((): React.CSSProperties => {
-    if (writeMethod === 'append') {
-      return {
-        outline: '2px solid #a8c7fa',
-      };
-    }
-
-    return {
-      outline: '0px solid #a8c7fa',
-    };
-  }, [writeMethod]);
-
-  const getCellValue = React.useCallback(() => {
-    if (cellData === null) {
-      return null;
-    }
-
-    if (writeMethod === 'overwrite') {
-      if (!cellData?.result) {
-        return cellData.value;
-      }
-
-      if (typeof cellData?.result === 'object') {
-        // @ts-expect-error
-        // eslint-disable-next-line
-        return cellData?.result._error;
-      }
-
-      return cellData?.result.toString();
-    }
-
-    return cellData.value;
-  }, [cellData, writeMethod]);
 
   const theme = {
     paragraph: 'lexical-p',
   };
 
   // try to recover gracefully without losing user data.
-  function onError(error) {
+  function onError(error: any) {
     console.error(error);
   }
 
@@ -172,54 +131,19 @@ const CellEditor = () => {
     onError,
   };
 
-  if (gridContainer === null) {
+  if (isCellEditorFocused === false) {
     return null;
   }
 
-  console.log('gridContainer', gridContainer);
+  if (activeCellPosition === null) {
+    return null;
+  }
 
-  // if (cellData === null) {
-  //   return null;
-  // }
-
-  // const onEnter = (
-  //   editorState: EditorState,
-  //   editor: LexicalEditor,
-  //   tags: Set<string>
-  // ) => {
-  //   const cellContent = editor.getRootElement()?.textContent || '';
-
-  //   setIsSelectingCellsForFormula(false);
-
-  //   const { evaluatedFormula, formulaResult } = resolveFormula(
-  //     cellData?.value || ''
-  //   );
-
-  //   if (evaluatedFormula && formulaResult) {
-  //     // Since the Cell is memoized, it doesn't re-render
-  //     //  when the formulaResult is the same.
-  //     // Temporarily, we set the cellRef textContent
-  //     //  manually.
-  //     // cellRef.current!.textContent = formulaResult;
-  //   } else {
-  //     setCellData(activeRow, activeColumn, {
-  //       value: cellContent,
-  //     });
-  //   }
-
-  //   emptyFormulaCellSelectionPoints();
-  //   setActiveCell(activeRow + 1, activeColumn);
-  //   // setWriteMethod('overwrite');
-  // };
-
-  return createPortal(
+  return (
     <div
-      autoFocus
       id="inputBox"
       style={{
-        zIndex: 130,
         position: 'absolute',
-        ...getStyleOnWriteMethod(),
         ...activeCellPosition,
       }}
       // onBeforeInput={(e) => {
@@ -245,38 +169,38 @@ const CellEditor = () => {
       //     value: cellContent,
       //   });
       // }}
-      onKeyDown={(e) => {
-        console.log('E', e);
+      // onKeyDown={(e) => {
+      //   console.log('E', e);
 
-        if (e.defaultPrevented) {
-          return; // Do nothing if the event was already processed
-        }
+      //   if (e.defaultPrevented) {
+      //     return; // Do nothing if the event was already processed
+      //   }
 
-        switch (e.key) {
-          case 'ArrowDown': {
-            setActiveCell(activeRow + 1, activeColumn);
-            e.preventDefault();
-            break;
-          }
-          case 'ArrowUp': {
-            setActiveCell(activeRow - 1, activeColumn);
-            e.preventDefault();
-            break;
-          }
-          case 'ArrowLeft': {
-            setActiveCell(activeRow, activeColumn - 1);
-            e.preventDefault();
-            break;
-          }
-          case 'ArrowRight': {
-            setActiveCell(activeRow, activeColumn + 1);
-            e.preventDefault();
-            break;
-          }
-          default:
-            break;
-        }
-      }}
+      //   switch (e.key) {
+      //     case 'ArrowDown': {
+      //       setActiveCell(activeRow + 1, activeColumn);
+      //       e.preventDefault();
+      //       break;
+      //     }
+      //     case 'ArrowUp': {
+      //       setActiveCell(activeRow - 1, activeColumn);
+      //       e.preventDefault();
+      //       break;
+      //     }
+      //     case 'ArrowLeft': {
+      //       setActiveCell(activeRow, activeColumn - 1);
+      //       e.preventDefault();
+      //       break;
+      //     }
+      //     case 'ArrowRight': {
+      //       setActiveCell(activeRow, activeColumn + 1);
+      //       e.preventDefault();
+      //       break;
+      //     }
+      //     default:
+      //       break;
+      //   }
+      // }}
       // onKeyUp={(e) => {
       //   switch (e.key) {
       //     case 'Enter': {
@@ -331,8 +255,8 @@ const CellEditor = () => {
             <ContentEditable
               id="cellEditor"
               style={{
-                outline: '2px solid aqua',
                 ...activeCellPosition,
+                outline: 'none',
               }}
             />
           }
@@ -341,9 +265,9 @@ const CellEditor = () => {
         />
         <HistoryPlugin />
         <EnterCommand />
+        <FocusPlugin />
       </LexicalComposer>
-    </div>,
-    gridContainer
+    </div>
   );
 };
 

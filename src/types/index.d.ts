@@ -50,9 +50,9 @@ export interface ColumnContextMenuProps {
 
 export interface ActiveCellPosition {
   height: number;
-  width: number;
-  top: number;
   left: number;
+  top: number;
+  width: number;
 }
 
 export type Point = [number, number];

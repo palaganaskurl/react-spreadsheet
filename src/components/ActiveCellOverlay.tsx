@@ -1,20 +1,22 @@
 import React from 'react';
 import { useSpreadsheet } from '../state/useSpreadsheet';
-import { OverlayZIndex, selectionBorderWidth } from '../constants';
+import { CellOutlineWidth, selectionBorderWidth } from '../constants';
 
 const ActiveCellOverlay = () => {
-  const [activeRow, activeColumn] = useSpreadsheet((state) => state.activeCell);
-  const setCellFormulaDragRangeStart = useSpreadsheet(
-    (state) => state.setCellFormulaDragRangeStart
-  );
-  const setCellFormulaDragRangeEnd = useSpreadsheet(
-    (state) => state.setCellFormulaDragRangeEnd
-  );
-  const setIsSelectingCellsForCellFormulaRange = useSpreadsheet(
-    (state) => state.setIsSelectingCellsForCellFormulaRange
-  );
+  // const setCellFormulaDragRangeStart = useSpreadsheet(
+  //   (state) => state.setCellFormulaDragRangeStart
+  // );
+  // const setCellFormulaDragRangeEnd = useSpreadsheet(
+  //   (state) => state.setCellFormulaDragRangeEnd
+  // );
+  // const setIsSelectingCellsForCellFormulaRange = useSpreadsheet(
+  //   (state) => state.setIsSelectingCellsForCellFormulaRange
+  // );
   const activeCellPosition = useSpreadsheet(
     (state) => state.activeCellPosition
+  );
+  const isCellEditorFocused = useSpreadsheet(
+    (state) => state.isCellEditorFocused
   );
 
   if (activeCellPosition === null) {
@@ -25,7 +27,6 @@ const ActiveCellOverlay = () => {
     position: 'absolute',
     pointerEvents: 'none',
     userSelect: 'none',
-    zIndex: OverlayZIndex,
     borderColor: '#0b57d0',
   };
 
@@ -33,14 +34,14 @@ const ActiveCellOverlay = () => {
     <div
       id="activeCell"
       style={{
-        width: `${activeCellPosition.width}px`,
-        height: `${activeCellPosition.height}px`,
+        width: `${activeCellPosition.width + CellOutlineWidth}px`,
+        height: `${activeCellPosition.height + CellOutlineWidth}px`,
         top: activeCellPosition.top,
         left: activeCellPosition.left,
         position: 'absolute',
-        // pointerEvents: 'none',
         userSelect: 'none',
-        zIndex: OverlayZIndex,
+        outline: isCellEditorFocused ? '2px solid #a8c7fa' : 'none',
+        pointerEvents: 'none',
       }}
     >
       <div

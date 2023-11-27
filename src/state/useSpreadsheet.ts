@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { Stage } from 'konva/lib/Stage';
 import {
   ActiveCellPosition,
   CellFormulaDragSelection,
@@ -13,10 +14,12 @@ import { getCellAddressLabel } from '../lib/spreadsheet';
 import { getEntityCountByType } from '../lib/formula';
 import { getCellContainer, getNumberFromPXString } from '../lib/dom';
 import Cell from '../lib/cell';
-import React from 'react';
+import { MaxColumns, MaxRows } from '../constants';
 
 export interface SpreadsheetState {
   activeCell: [number, number];
+  activeCellPosition: ActiveCellPosition | null;
+  canvasStage: Stage | null;
   cellFormulaDragRangeEnd: Point | null;
   cellFormulaDragRangeSelection: CellFormulaDragSelection | null;
   cellFormulaDragRangeStart: Point | null;
@@ -33,6 +36,7 @@ export interface SpreadsheetState {
   getMatrixValues: () => Array<Cell['value'][]>;
   insertNewColumnAt: (column: number, where: 'before' | 'after') => void;
   insertNewRowAt: (row: number, where: 'before' | 'after') => void;
+  isCellEditorFocused: boolean;
   isEditingAtFormulaEditor: boolean;
   isSelectingCellsForCellFormulaRange: boolean;
   isSelectingCellsForFormula: boolean;
@@ -41,6 +45,7 @@ export interface SpreadsheetState {
     column: number,
     activeCellPosition: ActiveCellPosition
   ) => void;
+  setCanvasStage: (canvasStage: Stage) => void;
   setCellData: (row: number, column: number, updateData: Partial<Cell>) => void;
   setCellFormulaDragRangeEnd: (point: Point | null) => void;
   setCellFormulaDragRangeStart: (point: Point | null) => void;
@@ -54,15 +59,12 @@ export interface SpreadsheetState {
   setFormulaEntitiesFromCellSelection: (
     formulaCellSelectionPoint: Point
   ) => void;
+  setIsCellEditorFocused: (isCellEditorFocused: boolean) => void;
   setIsEditingAtFormulaEditor: (isEditingAtFormulaEditor: boolean) => void;
   setIsSelectingCellsForCellFormulaRange: (
     isSelectingCellsForCellFormulaRange: boolean
   ) => void;
   setIsSelectingCellsForFormula: (isSelectingCellsForFormula: boolean) => void;
-  setWriteMethod: (writeMethod: 'overwrite' | 'append') => void;
-  writeMethod: 'overwrite' | 'append';
-
-  activeCellPosition: ActiveCellPosition | null;
 }
 
 export const DEFAULT_COLUMN_WIDTH = 50;
@@ -83,12 +85,14 @@ const generateInitialColumnWidths = () => {
 const generateInitialData = () => {
   const initialRowData: Cell[][] = [];
 
-  for (let i = 0; i < ROW_COUNT; i++) {
-    initialRowData.push([]);
+  for (let i = 1; i <= MaxRows; i++) {
+    const row = [];
 
-    for (let j = 0; j < COLUMN_COUNT; j++) {
-      initialRowData[i].push(new Cell());
+    for (let j = 1; j <= MaxColumns; j++) {
+      row.push(new Cell(i, j));
     }
+
+    initialRowData.push(row);
   }
 
   return initialRowData;
@@ -123,10 +127,6 @@ const useSpreadsheet = create<SpreadsheetState>()(
         column: number,
         activeCellPosition: ActiveCellPosition
       ) => {
-        // const activeCell = getCellContainer(row, column);
-        // const activeCellBoundingClientRect =
-        //   activeCell!.getBoundingClientRect();
-        // const { width, height } = activeCellBoundingClientRect;
         set({
           activeCell: [row, column],
           cellFormulaDragRangeSelection: null,
@@ -172,12 +172,14 @@ const useSpreadsheet = create<SpreadsheetState>()(
           return;
         }
 
-        const { cellRangeStart } = get();
+        const { cellRangeStart, data } = get();
 
         if (cellRangeStart === null) {
           return;
         }
 
+        // TODO: Idk why but need to get back on the context of this one.
+        //  The 2 loops below seems wrong.
         const [startRow, startCol] = cellRangeStart;
         const [endRow, endCol] = point;
 
@@ -187,40 +189,22 @@ const useSpreadsheet = create<SpreadsheetState>()(
         const endCellCol = Math.max(startCol, endCol);
         const endCellRow = Math.max(startRow, endRow);
 
-        const startCell = getCellContainer(startCellRow, startCellCol);
-
-        if (startCell === null) {
-          return;
-        }
-
-        // TODO: Not sure if this is a good thing to do.
-        //  The problem is I can't get the top and left from getBoundingClientRect
-        const top = getNumberFromPXString(startCell.style.top);
-        const left = getNumberFromPXString(startCell.style.left);
         let width = 0;
         let height = 0;
 
-        // TODO: There might be some issue here,
-        //  Try resizing some column then do cell range selection.
-        for (let col = startCellCol; col <= endCellCol; col++) {
-          const boundingClientRect = document
-            .querySelector(`[data-column="${col}"]`)
-            ?.getBoundingClientRect();
-          width += boundingClientRect?.width || 0;
+        for (let row = startCellRow; row <= endCellRow; row++) {
+          height += data[row][startCellCol].height;
         }
 
-        for (let row = startCellRow; row <= endCellRow; row++) {
-          const boundingClientRect = document
-            .querySelector(`[data-row="${row}"]`)
-            ?.getBoundingClientRect();
-          height += boundingClientRect?.height || 0;
+        for (let col = startCellCol; col <= endCellCol; col++) {
+          width += data[startCellRow][col].width;
         }
 
         set({
           cellRangeSelection: {
             width,
-            top,
-            left,
+            top: data[startCellRow][startCellCol].y,
+            left: data[startCellRow][startCellCol].x,
             height,
           },
           cellRangeEnd: point,
@@ -397,12 +381,6 @@ const useSpreadsheet = create<SpreadsheetState>()(
 
         return columnWidths[columnIndex];
       },
-      writeMethod: 'overwrite',
-      setWriteMethod: (writeMethod: 'overwrite' | 'append') => {
-        set({
-          writeMethod,
-        });
-      },
       setCellFormulaDragRangeEnd: (point: Point | null) => {
         if (point === null) {
           set({
@@ -522,6 +500,14 @@ const useSpreadsheet = create<SpreadsheetState>()(
         });
       },
       activeCellPosition: null,
+      isCellEditorFocused: false,
+      setIsCellEditorFocused: (isCellEditorFocused: boolean) => {
+        set({ isCellEditorFocused });
+      },
+      canvasStage: null,
+      setCanvasStage: (canvasStage: Stage) => {
+        set({ canvasStage });
+      },
     }),
     {
       // skipHydration: true,

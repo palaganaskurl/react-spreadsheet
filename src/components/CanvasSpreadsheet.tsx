@@ -1,24 +1,28 @@
 import React from 'react';
-import { Stage, Layer, Rect, Circle, KonvaNodeEvents } from 'react-konva';
-import Cell from './canvas/Cell';
+import { Stage, Layer, KonvaNodeEvents } from 'react-konva';
+import './Spreadsheet.css';
+import CellComponent from './canvas/CellComponent';
 import {
   DEFAULT_COLUMN_WIDTH,
   DEFAULT_ROW_HEIGHT,
+  useSpreadsheet,
 } from '../state/useSpreadsheet';
 import RowNumber from './canvas/RowNumber';
 import ColumnHeader from './canvas/ColumnHeader';
 import { numberToExcelHeader } from '../lib/spreadsheet';
 import ActiveCellOverlay from './ActiveCellOverlay';
-import { CellProps } from '../types';
+import CellEditor from './CellEditor';
+import { MaxColumns, MaxRows } from '../constants';
+import CellRangeSelectionOverlay from './canvas/CellRangeSelectionOverlay';
 
 const CanvasSpreadsheet = () => {
-  const MAX_COLUMNS = 30;
-  const MAX_ROWS = 50;
+  const data = useSpreadsheet((state) => state.data);
+  const setCanvasStage = useSpreadsheet((state) => state.setCanvasStage);
 
   const renderColumnHeaders = () => {
     const columnHeaders = [];
 
-    for (let column = 0; column <= MAX_COLUMNS; column++) {
+    for (let column = 0; column <= MaxColumns; column++) {
       columnHeaders.push(
         <ColumnHeader
           x={column * DEFAULT_COLUMN_WIDTH}
@@ -34,7 +38,7 @@ const CanvasSpreadsheet = () => {
   const renderRowLabels = () => {
     const rowLabels = [];
 
-    for (let row = 0; row <= MAX_ROWS; row++) {
+    for (let row = 0; row <= MaxRows; row++) {
       rowLabels.push(
         <RowNumber x={0} y={row * DEFAULT_ROW_HEIGHT} rowNumber={row} />
       );
@@ -43,29 +47,38 @@ const CanvasSpreadsheet = () => {
   };
 
   const renderCells = () => {
-    // TODO: Prefill this with arrays
     const cells = [];
 
-    for (let row = 1; row < MAX_ROWS; row++) {
-      cells.push([]);
+    for (let row = 0; row < data.length; row++) {
+      const currentRow = [];
 
-      for (let column = 1; column < MAX_COLUMNS; column++) {
-        cells[row - 1].push(
-          <Cell
-            x={row * DEFAULT_COLUMN_WIDTH}
-            y={column * DEFAULT_ROW_HEIGHT}
-            rowNumber={row - 1}
-            columnNumber={column - 1}
-          />
-        );
+      for (let column = 0; column < data[row].length; column++) {
+        const cell = data[row][column];
+
+        currentRow.push(<CellComponent cell={cell} />);
       }
+
+      cells.push(currentRow);
     }
 
     return cells;
   };
 
-  const onCellClick: KonvaNodeEvents['onClick'] = (e) => {
-    console.log(e.target.getAttrs());
+  const setCellRangeStart = useSpreadsheet((state) => state.setCellRangeStart);
+  const setCellRangeEnd = useSpreadsheet((state) => state.setCellRangeEnd);
+
+  const onMouseDown: KonvaNodeEvents['onMouseDown'] = (e) => {
+    const { dataRow, dataColumn } = e.target.getAttrs();
+
+    setCellRangeEnd(null);
+    setCellRangeStart([dataRow, dataColumn]);
+  };
+  const onMouseMove: KonvaNodeEvents['onMouseMove'] = (e) => {
+    if (e.evt.buttons === 1) {
+      const { dataRow, dataColumn } = e.target.getAttrs();
+
+      setCellRangeEnd([dataRow, dataColumn]);
+    }
   };
 
   return (
@@ -73,15 +86,23 @@ const CanvasSpreadsheet = () => {
       <Stage
         width={window.innerWidth}
         height={window.innerHeight}
-        // onClick={onCellClick}
+        ref={(e) => {
+          if (e) {
+            setCanvasStage(e);
+          }
+        }}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
       >
         <Layer>
           {renderColumnHeaders()}
           {renderRowLabels()}
           {renderCells()}
+          <CellRangeSelectionOverlay />
         </Layer>
       </Stage>
       <ActiveCellOverlay />
+      <CellEditor />
     </>
   );
 };

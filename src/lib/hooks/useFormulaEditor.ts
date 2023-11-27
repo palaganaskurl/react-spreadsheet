@@ -9,9 +9,7 @@ import { generateRandomColor } from '../color';
 
 const useFormulaEditor = () => {
   const getMatrixValues = useSpreadsheet((state) => state.getMatrixValues);
-  const [activeCellRow, activeCellColumn] = useSpreadsheet(
-    (state) => state.activeCell
-  );
+  const [activeRow, activeColumn] = useSpreadsheet((state) => state.activeCell);
   const setCellData = useSpreadsheet((state) => state.setCellData);
   const setFormulaCellSelectionPoints = useSpreadsheet(
     (state) => state.setFormulaCellSelectionPoints
@@ -43,7 +41,7 @@ const useFormulaEditor = () => {
       }
     });
 
-    setCellData(activeCellRow, activeCellColumn, {
+    setCellData(activeRow, activeColumn, {
       formulaEntities: entities,
     });
     setFormulaCellSelectionPoints(entities);
@@ -64,8 +62,9 @@ const useFormulaEditor = () => {
     if (cellContent?.startsWith('=')) {
       const formulaResult = formulaParser.parse(cellContent.substring(1));
 
-      setCellData(activeCellRow, activeCellColumn, {
+      setCellData(activeRow, activeColumn, {
         result: formulaResult,
+        value: cellContent,
       });
 
       return {
@@ -74,7 +73,7 @@ const useFormulaEditor = () => {
       };
     }
 
-    setCellData(activeCellRow, activeCellColumn, {
+    setCellData(activeRow, activeColumn, {
       value: cellContent,
     });
 

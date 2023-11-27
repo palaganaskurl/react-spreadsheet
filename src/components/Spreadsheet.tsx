@@ -20,7 +20,6 @@ import ActiveCellOverlay from './ActiveCellOverlay';
 import RowLabel from './RowLabel';
 import CellFormulaDragOverlay from './CellFormulaDragOverlay';
 import CellRangeSelectionOverlay from './CellRangeSelectionOverlay';
-import CellEditor from './CellEditor';
 
 const FormulaBarStyle: React.CSSProperties = {
   display: 'flex',
